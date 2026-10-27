@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --brand-primary: {{ brand.PRIMARY_COLOR|default:"#4E31E1" }};
+            --brand-secondary: {{ brand.SECONDARY_COLOR|default:"#673de6" }};
+            --brand-accent: {{ brand.ACCENT_COLOR|default:"#25c2b5" }};
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'estiloHeader.css' %}?v=20261026-privacidad">
+    <title>{% block title %}{{ brand.NAME|default:"Call Center Gamer" }}{% endblock %}</title>
+    {% block links %}{% endblock %}
+</head>
+<body>
+    <nav class="MainNav">
+        <div id="NavbarIzq">
+            <a href="{% if user.is_authenticated %}{% if user.admin or user.tecnico %}{% url 'administracion' %}{% else %}{% url 'inicio' user.id %}{% endif %}{% else %}{% url 'index' %}{% endif %}" id="logo">
+                <i class="{{ brand.ICON_CLASS|default:'fas fa-gamepad' }}"></i> {{ brand.NAME|default:"CallCenterGamer" }}
+            </a>
+            <ul>
+                {% if user.is_authenticated %}
+                    {% if user.admin or user.tecnico %}
+                        <li><a href="{% url 'administracion' %}">Administración</a></li>
+                        {% if user.admin %}<li><a href="{% url 'analytics_ia' %}">Analytics IA</a></li>{% endif %}
+                        {% if user.admin %}<li><a href="{% url 'gestion_usuarios' %}">Gestión de Usuarios</a></li>{% endif %}
+                    {% else %}
+                        <li><a href="{% url 'inicio' user.id %}">Inicio</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><a href="{% url 'index' %}">Inicio</a></li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div id="NavbarDer">
+            <ul>
+                {% if user.is_authenticated %}
+                    <li>
+                        <span style="color: white; margin-right: 15px;">
+                            <i class="fas fa-user"></i> {{ user.usuario }}
+                            {% if user.admin %}
+                                <span style="background: #ff6b6b; padding: 2px 5px; border-radius: 3px; font-size: 0.8em; margin-left: 5px;">Admin</span>
+                            {% elif user.tecnico %}
+                                <span style="background: #4ecdc4; padding: 2px 5px; border-radius: 3px; font-size: 0.8em; margin-left: 5px;">Técnico</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li>
+                        <form method="post" action="{% url 'Logout' %}" class="logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn">
+                                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                            </button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'Login' %}"><i class="fas fa-sign-in-alt"></i> Ingresar</a></li>
+                    <li><a href="{% url 'Register' %}"><i class="fas fa-user-plus"></i> Registrarse</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <section class="footer-section">
+                <h2>Contacto</h2>
+                <p>Instagram</p>
+                <p>Facebook</p>
+            </section>
+            <section class="footer-section">
+                <h2>Ubicación</h2>
+                <p>{{ brand.FOOTER_ADDRESS|default:"Av. Américo Vespucio 974, Maipú, Región Metropolitana" }}</p>
+            </section>
+            <div class="footer-copyright">
+                <p>© 2026-2030 {{ brand.NAME|default:"Call Center Gamer" }}. Todos los derechos reservados.</p>
+                <a href="{% url 'politica_privacidad' %}" class="btn-footer-privacidad">
+                    <i class="fas fa-user-shield"></i> Políticas de Privacidad
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    {% block js %}{% endblock %}
+
+    <style>
+        .logout-form { display: inline; margin: 0; padding: 0; }
+        .logout-btn {
+            background: none; border: none; color: white; cursor: pointer;
+            padding: 8px 12px; border-radius: 4px; transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif; font-size: 14px;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .logout-btn:hover { background-color: rgba(255, 255, 255, 0.1); color: #ff6b6b; }
+        #NavbarDer ul { display: flex; align-items: center; gap: 10px; }
+        #NavbarDer ul li { display: flex; align-items: center; }
+    </style>
+</body>
+</html>

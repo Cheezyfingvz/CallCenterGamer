@@ -1,0 +1,97 @@
+{% extends "componentes/header.html" %}
+{% load static %}
+
+{% block title %}Conversación #{{ Pregunta.idPregunta }} - {{ brand.NAME|default:"CallCenterGamer" }}{% endblock %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'respuestas.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="MainRespuestas" id="FondoColores">
+    <div class="divRespuestas">
+        {% for Respuesta in Respuestas %}
+        {% if Respuesta.Usuario.id == user.id %}
+        <div class="dRespuestas">
+            <p>{{ Respuesta.Respuesta }}</p>
+            <div class="dHora"><h4>{{ Respuesta.FechaHora.time }}</h4></div>
+        </div>
+        {% else %}
+        <div class="dRespuestasOtro">
+            <h1>{{ Respuesta.Usuario }}</h1>
+            <p>{{ Respuesta.Respuesta }}</p>
+            <div class="dHora"><h4>{{ Respuesta.FechaHora.time }}</h4></div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <form method="post">
+        <div class="TextArea">
+            {{ form }}
+            <button id="btnSend" type="submit"><i class="fa-solid fa-paper-plane fa-xl"></i></button>
+        </div>
+        {% csrf_token %}
+    </form>
+</div>
+<div class="dDerecha">
+    <div class="divPregunta">
+        <h2 id="Titulopreg">Información del Ticket #{{ Pregunta.idPregunta }}</h2>
+        <hr>
+        <h2>Titulo: <a>{{ Pregunta.Titulo }}</a></h2>
+        <h2>Usuario: <a>{{ Pregunta.Usuario }}</a></h2>
+        <h2>Estado: <a>{{ Pregunta.get_estado_display }}</a></h2>
+        <h2>Prioridad: <a>{{ Pregunta.get_prioridad_display }}</a></h2>
+        <h2>Categoría: <a>{{ Pregunta.categoria|default:"otros"|title }}</a></h2>
+        <h2>Pregunta: <a>{{ Pregunta.Pregunta }}</a></h2>
+    </div>
+
+    {% if sugerencia_ia %}
+    <div class="divPregunta" style="margin-top: 20px; padding: 15px; background: #f8f9fa;">
+        <h2 style="margin-left: 0; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-robot"></i> Asistencia IA para Soporte
+        </h2>
+        <p id="textoSugerenciaIA" style="font-size: 13px; color: #333; line-height: 1.4; margin-bottom: 10px;">{{ sugerencia_ia }}</p>
+        <button type="button" onclick="usarSugerenciaIA()" style="background: var(--brand-primary, #4E31E1); color: white; border: none; padding: 7px 14px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 600;">
+            <i class="fas fa-magic"></i> Copiar al cuadro de respuesta
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="divFondo"></div>
+    <div class="CambiarFondo">
+        <h2>Cambiar fondo de chat</h2>
+        <div id="btnFondo">
+            <button id="Rojo" type="button" onclick="cambiarColor('red')"></button>
+            <button id="Gris" type="button" onclick="cambiarColor('#323232')"></button>
+            <button id="Rosita" type="button" onclick="cambiarColor('#C4BAF5')"></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    const inputRespuesta = document.getElementById('id_Respuesta');
+    if (inputRespuesta) {
+        inputRespuesta.onkeydown = function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('btnSend').click();
+            }
+        };
+    }
+    function cambiarColor(NuevoColor) {
+        const elem = document.getElementById('FondoColores');
+        if (elem) {
+            elem.style.backgroundColor = NuevoColor;
+        }
+    }
+    function usarSugerenciaIA() {
+        const sugerencia = document.getElementById('textoSugerenciaIA');
+        if (inputRespuesta && sugerencia) {
+            inputRespuesta.value = sugerencia.innerText.slice(0, 200);
+            inputRespuesta.focus();
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+# ==========================================================
+# CallCenterGamer - Dependencias de Python
+# Base de datos: SQLite3 nativo (incluido en la libreria estandar,
+# por eso YA NO se necesita mysqlclient ni librerias C del sistema).
+# Despliegue objetivo: Render (Web Service) con gunicorn + whitenoise.
+# ==========================================================
+
+# --- Framework web ---
+# 5.2 es LTS. Django 6.x exige Python >= 3.12: en Render usar PYTHON_VERSION 3.12+.
+Django>=5.2,<6.2
+
+# --- Configuracion por variables de entorno (.env local / panel de Render) ---
+django-environ>=0.11.2
+
+# --- IA generativa (opcional: sin OPENAI_API_KEY el sistema usa fallback local) ---
+openai>=1.0.0,<2.0.0
+
+# --- Produccion en Render ---
+# Servidor WSGI de produccion (Start Command: gunicorn CallCenterGamer.wsgi:application)
+gunicorn>=21.2.0
+# Sirve los archivos estaticos (CSS/JS/img) directamente desde Django, sin Nginx
+whitenoise>=6.6.0
+
+# --- Formularios (PPT 6: Crispy Forms) ---
+django-crispy-forms>=2.1
+crispy-bootstrap5>=2024.2

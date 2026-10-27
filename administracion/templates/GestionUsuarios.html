@@ -1,0 +1,87 @@
+{% extends "componentes/header.html" %}
+{% load static %}
+
+{% block title %}Gestión de Usuarios{% endblock %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'gestion.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated and user.admin %}
+    <h1 id="Titulo">Gestión de Usuarios</h1>
+
+    {% if messages %}
+    <div style="max-width: 1000px; margin: 15px auto;">
+        {% for message in messages %}
+        <div style="padding: 12px 16px; border-radius: 6px; margin-bottom: 8px; background: #eef2ff; border-left: 4px solid #4E31E1; color: #1e293b;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="Container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Usuario</th>
+                    <th scope="col">Correo</th>
+                    <th scope="col">RUT</th>
+                    <th scope="col">Activo</th>
+                    <th scope="col">Admin</th>
+                    <th scope="col">Técnico</th>
+                    <th scope="col">Última Conexión</th>
+                    <th scope="col">Guardar</th>
+                    <th scope="col">Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for Usuario in Usuarios %}
+                <tr>
+                    <th scope="row">{{ Usuario.id }}</th>
+                    <td>
+                        {{ Usuario.usuario }}
+                        <form id="user-change-{{ Usuario.id }}" method="post" action="{% url 'gestion_usuarios' %}">
+                            {% csrf_token %}
+                            <input type="hidden" value="{{ Usuario.id }}" name="Userid">
+                        </form>
+                    </td>
+                    <td>{{ Usuario.correo }}</td>
+                    <td>{{ Usuario.rut|default:"-" }}</td>
+                    <td>
+                        <label class="visually-hidden" for="activo-{{ Usuario.id }}">Cuenta activa</label>
+                        <input id="activo-{{ Usuario.id }}" type="checkbox" name="activo" form="user-change-{{ Usuario.id }}" {% if Usuario.activo %}checked{% endif %}/>
+                    </td>
+                    <td>
+                        <label class="visually-hidden" for="admin-{{ Usuario.id }}">Administrador</label>
+                        <input id="admin-{{ Usuario.id }}" type="checkbox" name="admin" form="user-change-{{ Usuario.id }}" {% if Usuario.admin %}checked{% endif %}/>
+                    </td>
+                    <td>
+                        <label class="visually-hidden" for="tecnico-{{ Usuario.id }}">Técnico</label>
+                        <input id="tecnico-{{ Usuario.id }}" type="checkbox" name="tecnico" form="user-change-{{ Usuario.id }}" {% if Usuario.tecnico %}checked{% endif %}/>
+                    </td>
+                    <td>{{ Usuario.last_login|default:"Sin registro" }}</td>
+                    <td>
+                        <button id="btnModif" type="submit" form="user-change-{{ Usuario.id }}" title="Guardar cambios">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                    <td>
+                        {% if Usuario.id != user.id %}
+                        <form method="post" action="{% url 'eliminar_usuario' Usuario.id %}" onsubmit="return confirm('¿Estás seguro de borrar este usuario?')">
+                            {% csrf_token %}
+                            <button type="submit" title="Eliminar usuario"><i class="fa-regular fa-trash-can"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="10" class="users-empty">No hay usuarios para mostrar.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

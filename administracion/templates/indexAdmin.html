@@ -1,0 +1,174 @@
+{% extends "componentes/header.html" %}
+{% load static %}
+
+{% block title %}Panel de Administración - {{ brand.NAME|default:"CallCenterGamer" }}{% endblock %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'index.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <h1 id="Titulo"><i class="fas fa-headset"></i> Panel de Administración y Soporte</h1>
+            <p class="dashboard-subtitle">Gestión centralizada de tickets, asignación de técnicos y métricas de servicio</p>
+        </div>
+        <div class="dashboard-actions">
+            {% if user.admin %}
+            <a href="{% url 'analytics_ia' %}" class="btn-action btn-primary">
+                <i class="fas fa-brain"></i> Analytics IA
+            </a>
+            <a href="{% url 'gestion_usuarios' %}" class="btn-action btn-secondary">
+                <i class="fas fa-users-cog"></i> Gestión de Usuarios
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Mensajes del sistema Django #}
+    {% if messages %}
+    <div class="alerts-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Alertas proactivas de IA #}
+    {% if alertas_ia %}
+    <div class="alerts-container">
+        {% for alerta in alertas_ia %}
+        <div class="alert alert-{{ alerta.tipo }}">
+            <strong>Prioridad {{ alerta.prioridad|upper }}:</strong> {{ alerta.mensaje }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Tarjetas de Estadísticas #}
+    {% if estadisticas_ia %}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label"><i class="fas fa-ticket-alt"></i> Total Tickets</span>
+            <p class="stat-number">{{ estadisticas_ia.total_preguntas }}</p>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label"><i class="fas fa-exclamation-circle"></i> Sin Respuesta</span>
+            <p class="stat-number stat-danger">{{ estadisticas_ia.preguntas_sin_respuesta }}</p>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label"><i class="fas fa-check-circle"></i> % Atendidos</span>
+            <p class="stat-number stat-success">{{ estadisticas_ia.porcentaje_resueltas|floatformat:1 }}%</p>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label"><i class="fas fa-calendar-week"></i> Últimos 7 Días</span>
+            <p class="stat-number">{{ estadisticas_ia.tendencia_semanal }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Barra de Filtros por Estado y Prioridad #}
+    <form method="get" action="{% url 'administracion' %}" class="filter-bar">
+        <div class="filter-group">
+            <label for="filtro-estado">Estado:</label>
+            <select id="filtro-estado" name="estado">
+                <option value="">Todos los estados</option>
+                {% for valor, etiqueta in estados_choices %}
+                <option value="{{ valor }}" {% if estado_filtro == valor %}selected{% endif %}>{{ etiqueta }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filtro-prioridad">Prioridad:</label>
+            <select id="filtro-prioridad" name="prioridad">
+                <option value="">Todas las prioridades</option>
+                {% for valor, etiqueta in prioridades_choices %}
+                <option value="{{ valor }}" {% if prioridad_filtro == valor %}selected{% endif %}>{{ etiqueta }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-filter"><i class="fas fa-filter"></i> Filtrar</button>
+        {% if estado_filtro or prioridad_filtro %}
+        <a href="{% url 'administracion' %}" class="btn-clear">Limpiar filtros</a>
+        {% endif %}
+    </form>
+
+    {# Tabla completa de Tickets #}
+    <div class="Container table-responsive">
+        <table class="preguntas-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Prioridad</th>
+                    <th>Categoría IA</th>
+                    <th>Técnico Asignado</th>
+                    <th class="c">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pregunta in Preguntas %}
+                <tr>
+                    <td><strong>#{{ pregunta.idPregunta }}</strong></td>
+                    <td>
+                        <a href="{% url 'respuestas' pregunta.idPregunta %}" class="ticket-link">
+                            {{ pregunta.Titulo }}
+                        </a>
+                    </td>
+                    <td>{{ pregunta.Usuario.usuario }}</td>
+                    <td>{{ pregunta.Fecha_creacion|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <span class="badge badge-estado badge-{{ pregunta.estado }}">
+                            {{ pregunta.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-prioridad badge-prio-{{ pregunta.prioridad }}">
+                            {{ pregunta.get_prioridad_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-categoria">
+                            {{ pregunta.categoria|default:"otros"|title }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if pregunta.tecnico_asignado %}
+                            <span class="tech-assigned"><i class="fas fa-user-shield"></i> {{ pregunta.tecnico_asignado.usuario }}</span>
+                        {% else %}
+                            <span class="tech-unassigned">Sin asignar</span>
+                        {% endif %}
+                    </td>
+                    <td class="c actions-cell">
+                        <a href="{% url 'respuestas' pregunta.idPregunta %}" class="btn-table btn-reply" title="Ver y Responder">
+                            <i class="fas fa-comments"></i> Responder
+                        </a>
+                        {% if user.admin %}
+                        <a href="{% url 'modificar_pregunta' pregunta.idPregunta %}" class="btn-table btn-edit" title="Editar Ticket">
+                            <i class="fas fa-pen"></i> Editar
+                        </a>
+                        <form method="post" action="{% url 'borrar_pregunta' pregunta.Usuario.id pregunta.idPregunta %}" class="inline-form" onsubmit="return confirm('¿Estás seguro de eliminar este ticket?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-table btn-delete" title="Eliminar Ticket">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="c empty-row">No hay tickets registrados con los criterios seleccionados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

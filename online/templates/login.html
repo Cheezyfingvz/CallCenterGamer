@@ -1,0 +1,28 @@
+{% extends "componentes/header.html" %}
+{% load static %}
+
+{% block title %}Iniciar Sesión - {{ brand.NAME|default:"CallCenterGamer" }}{% endblock %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="mainLogin">
+    {% if user.is_authenticated %}
+        {% if user.admin or user.tecnico %}
+        <script>window.location.href = "{% url 'administracion' %}";</script>
+        {% else %}
+        <script>window.location.href = "{% url 'inicio' user.id %}";</script>
+        {% endif %}
+    {% else %}
+    <h2>Iniciar sesión</h2>
+    <form id="Formulario" method="POST">
+        {{ form }}
+        {% csrf_token %}
+        <input value="Iniciar Sesion" type="submit">
+    </form>
+    <p>¿Aun no tienes cuenta? <a href="{% url 'Register' %}">Registrate ya!</a></p>
+    {% endif %}
+</div>
+{% endblock %}

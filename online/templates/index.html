@@ -1,0 +1,42 @@
+{% extends "componentes/header.html" %}
+{% load static %}
+
+{% block title %}Inicio - {{ brand.NAME|default:"CallCenterGamer" }}{% endblock %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'estiloHeader.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    {% if user.admin or user.tecnico %}
+    <script>window.location.href = "{% url 'administracion' %}";</script>
+    {% else %}
+    <script>window.location.href = "{% url 'inicio' user.id %}";</script>
+    {% endif %}
+{% endif %}
+<div class="Banner">
+    <div class="contLeft"></div>
+    <div class="contRight">
+        <h1>{{ brand.WELCOME_TITLE|default:"Bienvenido a Call of Gamers!" }}</h1>
+        <p>{{ brand.SLOGAN|default:"Comunicate con el mejor call center gamer, nosotros te brindaremos la solución necesaria para tu problema, no dudes más!" }}</p>
+        <div class="contBtn">
+            <button id="btnIngresar" onclick="window.location.href = '{% url 'Login' %}'">Ingresar</button>
+        </div>
+    </div>
+</div>
+<div class="mainCard">
+    <div class="iCard"></div>
+    <div class="dCard">
+        <h1>{{ brand.SERVICE_TITLE|default:"Atención 24/7" }}</h1>
+        <p>{{ brand.SLOGAN|default:"Comunicate con el mejor call center gamer, nosotros te brindaremos la solución necesaria para tu problema, no dudes más!" }}</p>
+    </div>
+</div>
+<div class="finalBody">
+    <h1>{{ brand.CTA_TITLE|default:"Comunicate con nosotros" }}</h1>
+    <p>{{ brand.CTA_SUBTITLE|default:"Escribenos y nuestros profesionales solucionaran tu problema en tan solo un momento!" }}</p>
+    <div class="contBtn" style="margin-top: 65px;">
+        <button id="btnIngresar" onclick="window.location.href = '{% url 'Login' %}'">Ingresar</button>
+    </div>
+</div>
+{% endblock %}

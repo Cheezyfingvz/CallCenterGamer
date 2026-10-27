@@ -1,0 +1,65 @@
+{% extends "componentes/header.html" %}
+{% load static %}
+
+{% block title %}Modificar Ticket #{{ pregunta.idPregunta }} - {{ brand.NAME|default:"CallCenterGamer" }}{% endblock %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'modificar.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if user.admin %}
+<div class="Container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <h1 id="TituloMod" style="margin: 0;">
+            <i class="fas fa-edit"></i> Modificar Ticket #{{ pregunta.idPregunta }}
+        </h1>
+        <a href="{% url 'administracion' %}" class="btn-volver">
+            <i class="fas fa-arrow-left"></i> Volver al Panel
+        </a>
+    </div>
+
+    <div class="MainTodo">
+        <div class="MainPreguntar">
+            <div class="InsPreguntas">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <input type="submit" value="Guardar cambios del ticket">
+                </form>
+            </div>
+        </div>
+
+        <div class="AsistenciaIAPanel">
+            <div class="ia-card">
+                <h3><i class="fas fa-robot"></i> Diagnóstico IA del Ticket</h3>
+                <p class="ia-meta">
+                    <strong>Autor:</strong> {{ pregunta.Usuario.usuario }} |
+                    <strong>Categoría sugerida:</strong> <span class="ia-badge">{{ categoria_ia|title }}</span>
+                </p>
+                {% if sugerencias_ia %}
+                <div class="ia-box">
+                    {% for item in sugerencias_ia %}
+                    <p>{{ item.sugerencia|default:item }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if preguntas_similares %}
+            <div class="ia-card">
+                <h3><i class="fas fa-lightbulb"></i> Casos Históricos Similares</h3>
+                {% for sim in preguntas_similares %}
+                <div class="ia-similar-item">
+                    <strong>{{ sim.pregunta_similar }}</strong>
+                    <span class="ia-badge">Similitud: {{ sim.similitud }}</span>
+                    <p>{{ sim.respuesta }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

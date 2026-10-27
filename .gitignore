@@ -1,0 +1,30 @@
+# Caché y bytecode de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Variables de entorno secretas locales
+.env
+
+# Archivos generados en runtime / build (se recrean automáticamente)
+staticfiles/
+logs/*.log
+media/
+
+# Nota: db.sqlite3 NO se ignora para conservar la base de datos SQLite3
+# precargada en el repositorio para evaluación y despliegue en Render.
+!db.sqlite3
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
