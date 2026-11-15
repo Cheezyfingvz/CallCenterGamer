@@ -1,0 +1,102 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}Catálogo Musical — SoundFlow{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h1 style="font-size: 30px; font-weight: 800;">Catálogo Musical</h1>
+    <p style="color: var(--sf-text-muted); font-size: 14px;">Explora todas las canciones registradas localmente en SoundFlow.</p>
+</div>
+
+<!-- Filtros de Género -->
+<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;">
+    <a href="{% url 'musica:catalogo' %}"
+       class="sf-btn sf-btn-sm {% if not genero_seleccionado %}sf-btn-primary{% else %}sf-btn-secondary{% endif %}">
+       Todos los géneros
+    </a>
+    {% for gen in generos %}
+        <a href="{% url 'musica:catalogo' %}?genero={{ gen.slug }}"
+           class="sf-btn sf-btn-sm {% if genero_seleccionado == gen.slug %}sf-btn-primary{% else %}sf-btn-secondary{% endif %}">
+           {{ gen.nombre }}
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Tabla de Canciones -->
+<table class="sf-track-table">
+    <thead>
+        <tr>
+            <th class="sf-track-num">#</th>
+            <th>Título</th>
+            <th>Álbum</th>
+            <th class="sf-track-duration">Duración</th>
+            <th class="sf-track-actions">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cancion in page_obj %}
+            <tr class="sf-track-row">
+                <td class="sf-track-cell sf-track-num">
+                    <button class="sf-ctrl-btn sf-btn-play-trigger"
+                            data-title="{{ cancion.titulo }}"
+                            data-artist="{{ cancion.artista.nombre }}"
+                            data-cover="{{ cancion.portada_o_default }}"
+                            data-duration="{{ cancion.duracion_seg }}"
+                            style="font-size:12px;">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </td>
+                <td class="sf-track-cell">
+                    <div class="sf-track-info">
+                        <a href="{% url 'musica:cancion_detail' cancion.pk %}" class="sf-track-title">{{ cancion.titulo }}</a>
+                        <a href="{% url 'musica:artista_detail' cancion.artista.pk %}" class="sf-track-artist">{{ cancion.artista.nombre }}</a>
+                    </div>
+                </td>
+                <td class="sf-track-cell">
+                    {% if cancion.album %}
+                        <a href="{% url 'musica:album_detail' cancion.album.pk %}" style="color:var(--sf-text-muted); font-size:13px;">
+                            {{ cancion.album.titulo }}
+                        </a>
+                    {% else %}
+                        <span style="color:#666;">-</span>
+                    {% endif %}
+                </td>
+                <td class="sf-track-cell sf-track-duration">{{ cancion.duracion_formateada }}</td>
+                <td class="sf-track-cell sf-track-actions">
+                    <a href="{% url 'musica:ticket_desde_musica' 'cancion' cancion.pk %}" class="sf-btn sf-btn-support sf-btn-sm" title="Reportar problema o consultar">
+                        <i class="fas fa-headset"></i> Soporte
+                    </a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" style="padding: 24px; text-align: center; color: var(--sf-text-muted);">
+                    No se encontraron canciones en este género o catálogo.
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Paginación -->
+{% if page_obj.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 12px; margin-top: 32px;">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if genero_seleccionado %}&genero={{ genero_seleccionado }}{% endif %}" class="sf-btn sf-btn-secondary sf-btn-sm">
+                <i class="fas fa-chevron-left"></i> Anterior
+            </a>
+        {% endif %}
+
+        <span style="display:flex; align-items:center; color:var(--sf-text-muted); font-size:13px;">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if genero_seleccionado %}&genero={{ genero_seleccionado }}{% endif %}" class="sf-btn sf-btn-secondary sf-btn-sm">
+                Siguiente <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

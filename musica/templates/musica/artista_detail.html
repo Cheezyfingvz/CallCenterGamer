@@ -1,0 +1,95 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}{{ artista.nombre }} — SoundFlow{% endblock %}
+
+{% block content %}
+<div class="sf-hero-header">
+    <img src="{{ artista.imagen_url|default:'/static/musica/img/cover_placeholder.svg' }}" alt="{{ artista.nombre }}" class="sf-hero-cover" style="border-radius: 50%;">
+    <div class="sf-hero-info">
+        <span class="sf-hero-type"><i class="fas fa-check-circle" style="color:var(--sf-accent);"></i> Artista verificado</span>
+        <h1 class="sf-hero-title">{{ artista.nombre }}</h1>
+        <div class="sf-hero-meta">
+            {% if artista.pais %}<span><i class="fas fa-map-marker-alt"></i> {{ artista.pais }}</span> &bull;{% endif %}
+            <span>{{ artista.canciones.count }} canciones</span> &bull;
+            <span>{{ artista.albums.count }} álbumes</span>
+            {% if artista.mbid %}
+                &bull; <span style="font-size:12px; color:#64b5f6;">MBID: {{ artista.mbid|slice:":12" }}...</span>
+            {% endif %}
+        </div>
+
+        <div class="sf-hero-actions">
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'musica:toggle_favorito' 'artista' artista.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="sf-btn {% if es_favorito %}sf-btn-primary{% else %}sf-btn-secondary{% endif %}">
+                        <i class="fas fa-heart"></i> {% if es_favorito %}Siguiendo{% else %}Seguir{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+
+            <a href="{% url 'musica:ticket_desde_musica' 'artista' artista.pk %}" class="sf-btn sf-btn-support">
+                <i class="fas fa-headset"></i> Contactar soporte
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if artista.bio %}
+<div style="background-color: var(--sf-card-bg); padding: 20px; border-radius: var(--sf-radius-md); margin-bottom: 32px; border: 1px solid var(--sf-border);">
+    <h3 style="font-size: 16px; margin-bottom: 8px;"><i class="fas fa-info-circle"></i> Biografía / Notas</h3>
+    <p style="color: var(--sf-text-muted); font-size: 14px; line-height: 1.6;">{{ artista.bio }}</p>
+</div>
+{% endif %}
+
+<!-- CANCIONES POPULARES DEL ARTISTA -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Canciones populares</h2>
+</div>
+<table class="sf-track-table" style="margin-bottom: 32px;">
+    <tbody>
+        {% for c in canciones %}
+            <tr class="sf-track-row">
+                <td class="sf-track-cell sf-track-num">
+                    <button class="sf-ctrl-btn sf-btn-play-trigger"
+                            data-title="{{ c.titulo }}"
+                            data-artist="{{ artista.nombre }}"
+                            data-cover="{{ c.portada_o_default }}"
+                            data-duration="{{ c.duracion_seg }}">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </td>
+                <td class="sf-track-cell">
+                    <a href="{% url 'musica:cancion_detail' c.pk %}" class="sf-track-title">{{ c.titulo }}</a>
+                </td>
+                <td class="sf-track-cell">{{ c.album.titulo|default:"Sencillo" }}</td>
+                <td class="sf-track-cell sf-track-duration">{{ c.duracion_formateada }}</td>
+                <td class="sf-track-cell sf-track-actions">
+                    <a href="{% url 'musica:cancion_detail' c.pk %}" class="sf-btn sf-btn-secondary sf-btn-sm">Detalle</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" style="color:var(--sf-text-muted); padding:16px;">No hay canciones registradas para este artista.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- DISCOGRAFÍA / ÁLBUMES -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Discografía</h2>
+</div>
+<div class="sf-grid">
+    {% for alb in albums %}
+        <div class="sf-card">
+            <div class="sf-card-img-wrapper">
+                <img src="{{ alb.portada_o_default }}" alt="{{ alb.titulo }}" class="sf-card-img">
+            </div>
+            <a href="{% url 'musica:album_detail' alb.pk %}" class="sf-card-title">{{ alb.titulo }}</a>
+            <span class="sf-card-subtitle">{{ alb.anio|default:"Lanzamiento" }} &bull; Álbum</span>
+        </div>
+    {% empty %}
+        <p style="color:var(--sf-text-muted);">Sin álbumes registrados.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

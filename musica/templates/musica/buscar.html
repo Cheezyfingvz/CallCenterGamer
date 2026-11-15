@@ -1,0 +1,199 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}Buscar — SoundFlow{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h1 style="font-size: 30px; font-weight: 800; margin-bottom: 12px;">Buscar</h1>
+
+    <!-- Formulario de Búsqueda -->
+    <form method="get" action="{% url 'musica:buscar' %}" style="display: flex; gap: 12px; max-width: 600px;">
+        <div style="position: relative; flex: 1;">
+            <i class="fas fa-search" style="position: absolute; left: 14px; top: 12px; color: var(--sf-text-muted);"></i>
+            <input type="text" name="q" value="{{ query }}" class="sf-input" style="width: 100%; padding-left: 38px; border-radius: var(--sf-radius-full);" placeholder="¿Qué quieres escuchar hoy? (Canciones, artistas, álbumes)">
+        </div>
+        <button type="submit" class="sf-btn sf-btn-primary">Buscar</button>
+    </form>
+</div>
+
+{% if query %}
+    <!-- Resumen de Resultados -->
+    <div style="margin-bottom: 24px; display: flex; align-items: center; gap: 16px;">
+        <span style="font-size: 14px; color: var(--sf-text-muted);">
+            Resultados para "<strong>{{ query }}</strong>":
+            <span style="color: var(--sf-accent); font-weight: 700;">{{ resultados.total_local }} locales</span> &bull;
+            <span style="color: #64b5f6; font-weight: 700;">{{ resultados.total_externo }} en MusicBrainz</span>
+        </span>
+    </div>
+
+    <!-- 1. RESULTADOS LOCALES -->
+    {% if resultados.total_local > 0 or resultados.playlists_local %}
+        <div class="sf-section-header">
+            <h2 class="sf-section-title"><i class="fas fa-database" style="color:var(--sf-accent); margin-right:8px;"></i> Catálogo Local SoundFlow</h2>
+        </div>
+
+        {% if resultados.canciones_local %}
+            <h3 style="font-size: 16px; margin: 12px 0; color: var(--sf-text-muted);">Canciones locales</h3>
+            <table class="sf-track-table" style="margin-bottom: 24px;">
+                <tbody>
+                    {% for c in resultados.canciones_local %}
+                        <tr class="sf-track-row">
+                            <td class="sf-track-cell sf-track-num">
+                                <button class="sf-ctrl-btn sf-btn-play-trigger"
+                                        data-title="{{ c.titulo }}"
+                                        data-artist="{{ c.artista.nombre }}"
+                                        data-cover="{{ c.portada_o_default }}"
+                                        data-duration="{{ c.duracion_seg }}">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </td>
+                            <td class="sf-track-cell">
+                                <div class="sf-track-info">
+                                    <a href="{% url 'musica:cancion_detail' c.pk %}" class="sf-track-title">{{ c.titulo }}</a>
+                                    <a href="{% url 'musica:artista_detail' c.artista.pk %}" class="sf-track-artist">{{ c.artista.nombre }}</a>
+                                </div>
+                            </td>
+                            <td class="sf-track-cell">{{ c.album.titulo|default:"Sencillo" }}</td>
+                            <td class="sf-track-cell sf-track-duration">{{ c.duracion_formateada }}</td>
+                            <td class="sf-track-cell sf-track-actions">
+                                <a href="{% url 'musica:cancion_detail' c.pk %}" class="sf-btn sf-btn-secondary sf-btn-sm">Abrir</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        {% if resultados.albums_local %}
+            <h3 style="font-size: 16px; margin: 12px 0; color: var(--sf-text-muted);">Álbumes locales</h3>
+            <div class="sf-grid" style="margin-bottom: 24px;">
+                {% for alb in resultados.albums_local %}
+                    <div class="sf-card">
+                        <div class="sf-card-img-wrapper">
+                            <img src="{{ alb.portada_o_default }}" alt="{{ alb.titulo }}" class="sf-card-img">
+                        </div>
+                        <a href="{% url 'musica:album_detail' alb.pk %}" class="sf-card-title">{{ alb.titulo }}</a>
+                        <span class="sf-card-subtitle">{{ alb.artista.nombre }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if resultados.artistas_local %}
+            <h3 style="font-size: 16px; margin: 12px 0; color: var(--sf-text-muted);">Artistas locales</h3>
+            <div class="sf-grid" style="margin-bottom: 24px;">
+                {% for art in resultados.artistas_local %}
+                    <div class="sf-card" style="text-align: center;">
+                        <div class="sf-card-img-wrapper" style="border-radius: 50%;">
+                            <img src="{{ art.imagen_url|default:'/static/musica/img/cover_placeholder.svg' }}" alt="{{ art.nombre }}" class="sf-card-img" style="border-radius: 50%;">
+                        </div>
+                        <a href="{% url 'musica:artista_detail' art.pk %}" class="sf-card-title">{{ art.nombre }}</a>
+                        <span class="sf-card-subtitle">{{ art.pais|default:"Artista" }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if resultados.playlists_local %}
+            <h3 style="font-size: 16px; margin: 12px 0; color: var(--sf-text-muted);">Playlists locales</h3>
+            <div class="sf-grid" style="margin-bottom: 24px;">
+                {% for pl in resultados.playlists_local %}
+                    <div class="sf-card">
+                        <div class="sf-card-img-wrapper">
+                            <img src="{% static 'musica/img/cover_placeholder.svg' %}" alt="{{ pl.nombre }}" class="sf-card-img">
+                        </div>
+                        <a href="{% url 'musica:playlist_detail' pl.pk %}" class="sf-card-title">{{ pl.nombre }}</a>
+                        <span class="sf-card-subtitle">Por {{ pl.usuario.usuario }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- 2. RESULTADOS EXTERNOS (MUSICBRAINZ) -->
+    <div class="sf-section-header">
+        <h2 class="sf-section-title"><i class="fas fa-globe" style="color:#64b5f6; margin-right:8px;"></i> Resultados en MusicBrainz</h2>
+    </div>
+
+    {% if resultados.canciones_externas %}
+        <h3 style="font-size: 16px; margin: 12px 0; color: #64b5f6;">Canciones encontradas en MusicBrainz</h3>
+        <table class="sf-track-table" style="margin-bottom: 24px;">
+            <tbody>
+                {% for tr in resultados.canciones_externas %}
+                    <tr class="sf-track-row">
+                        <td class="sf-track-cell sf-track-num"><i class="fas fa-cloud-download-alt" style="color:#64b5f6;"></i></td>
+                        <td class="sf-track-cell">
+                            <div class="sf-track-info">
+                                <span class="sf-track-title">{{ tr.titulo }}</span>
+                                <span class="sf-track-artist">{{ tr.artista }}</span>
+                            </div>
+                        </td>
+                        <td class="sf-track-cell">{{ tr.album|default:"Sencillo / Recopilatorio" }}</td>
+                        <td class="sf-track-cell" style="font-size:12px; color:#aaa;">MBID: {{ tr.mbid|slice:":8" }}...</td>
+                        <td class="sf-track-cell sf-track-actions">
+                            <a href="{% url 'musica:sincronizar_externo' 'cancion' tr.mbid %}" class="sf-btn sf-btn-primary sf-btn-sm" title="Importar y guardar en SQLite">
+                                <i class="fas fa-save"></i> Guardar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if resultados.albums_externos %}
+        <h3 style="font-size: 16px; margin: 12px 0; color: #64b5f6;">Álbumes encontrados en MusicBrainz</h3>
+        <div class="sf-grid" style="margin-bottom: 24px;">
+            {% for alb in resultados.albums_externos %}
+                <div class="sf-card">
+                    <div class="sf-card-img-wrapper">
+                        <img src="{{ alb.portada_url|default:'/static/musica/img/cover_placeholder.svg' }}" alt="{{ alb.titulo }}" class="sf-card-img">
+                        <span class="sf-badge-mb">MusicBrainz</span>
+                    </div>
+                    <span class="sf-card-title">{{ alb.titulo }}</span>
+                    <span class="sf-card-subtitle">{{ alb.artista }} &bull; {{ alb.anio|default:"N/A" }}</span>
+                    <a href="{% url 'musica:sincronizar_externo' 'album' alb.mbid %}" class="sf-btn sf-btn-primary sf-btn-sm" style="margin-top:10px;">
+                        <i class="fas fa-save"></i> Sincronizar
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if resultados.artistas_externos %}
+        <h3 style="font-size: 16px; margin: 12px 0; color: #64b5f6;">Artistas encontrados en MusicBrainz</h3>
+        <div class="sf-grid" style="margin-bottom: 24px;">
+            {% for art in resultados.artistas_externos %}
+                <div class="sf-card" style="text-align: center;">
+                    <div class="sf-card-img-wrapper" style="border-radius: 50%;">
+                        <img src="{% static 'musica/img/cover_placeholder.svg' %}" alt="{{ art.nombre }}" class="sf-card-img" style="border-radius:50%;">
+                        <span class="sf-badge-mb" style="border-radius: 50%; left:calc(50% - 15px);">MB</span>
+                    </div>
+                    <span class="sf-card-title">{{ art.nombre }}</span>
+                    <span class="sf-card-subtitle">{{ art.pais|default:"Internacional" }}</span>
+                    <a href="{% url 'musica:sincronizar_externo' 'artista' art.mbid %}" class="sf-btn sf-btn-primary sf-btn-sm" style="margin-top:10px;">
+                        <i class="fas fa-save"></i> Importar
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if resultados.total_local == 0 and resultados.total_externo == 0 %}
+        <div style="background-color: var(--sf-card-bg); padding: 40px; border-radius: var(--sf-radius-md); text-align: center; margin-top: 24px;">
+            <i class="fas fa-search" style="font-size: 40px; color: var(--sf-text-muted); margin-bottom: 16px;"></i>
+            <h3>No se encontraron resultados para "{{ query }}"</h3>
+            <p style="color: var(--sf-text-muted); margin-top: 8px;">Intenta con el nombre de otro artista, álbum o canción, o verifica si la conexión a MusicBrainz está disponible.</p>
+        </div>
+    {% endif %}
+
+{% else %}
+    <div style="text-align: center; padding: 60px 20px; color: var(--sf-text-muted);">
+        <i class="fas fa-music" style="font-size: 48px; margin-bottom: 16px; color: #333;"></i>
+        <h2>Encuentra tu música favorita</h2>
+        <p style="margin-top: 8px;">Escribe una palabra clave arriba para buscar tanto en el catálogo local de SoundFlow como en MusicBrainz.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -41,7 +41,7 @@ class Command(BaseCommand):
         # Contraseñas por defecto solicitadas (personalizables por variables de entorno)
         admin_pass = os.environ.get('SEED_ADMIN_PASSWORD', 'admin123')
         tech_pass = os.environ.get('SEED_TECH_PASSWORD', 'tecnico123')
-        client_pass = os.environ.get('SEED_CLIENT_PASSWORD', 'usuario123')
+        client_pass = os.environ.get('SEED_CLIENT_PASSWORD', 'cliente123')
 
         # ------------------------------------------------------------------
         # 1. Creación / Verificación del Administrador y Técnico (`admin`)
@@ -90,8 +90,30 @@ class Command(BaseCommand):
             tech_user.save()
 
         # ------------------------------------------------------------------
-        # 3. Creación / Verificación del Usuario Normal / Cliente (`usuario`)
+        # 3. Creación / Verificación del Usuario Normal / Cliente (`cliente` y `usuario`)
         # ------------------------------------------------------------------
+        # Cuenta 'cliente' (con contraseña cliente123)
+        cliente_account, cliente_created = Usuario.objects.get_or_create(
+            usuario='cliente',
+            defaults={
+                'correo': 'cliente@gmail.com',
+                'nombre': 'Matías',
+                'apellido': 'Soto',
+                'rut': '19.555.444-2',
+                'activo': True,
+                'admin': False,
+                'tecnico': False,
+            },
+        )
+        if cliente_created or not cliente_account.check_password(client_pass) or cliente_account.correo != 'cliente@gmail.com':
+            cliente_account.correo = 'cliente@gmail.com'
+            cliente_account.activo = True
+            cliente_account.admin = False
+            cliente_account.tecnico = False
+            cliente_account.set_password(client_pass)
+            cliente_account.save()
+
+        # Cuenta 'usuario' (con contraseña cliente123 para compatibilidad total)
         client_user, client_created = Usuario.objects.get_or_create(
             usuario='usuario',
             defaults={

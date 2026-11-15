@@ -1,0 +1,143 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}{{ album.titulo }} — SoundFlow{% endblock %}
+
+{% block content %}
+<div class="sf-hero-header">
+    <img src="{{ album.portada_o_default }}" alt="{{ album.titulo }}" class="sf-hero-cover">
+    <div class="sf-hero-info">
+        <span class="sf-hero-type">Álbum {% if album.es_demo %}<span class="sf-badge-demo" style="position:static; display:inline-block; margin-left:8px;">Demo</span>{% endif %}</span>
+        <h1 class="sf-hero-title">{{ album.titulo }}</h1>
+        <div class="sf-hero-meta">
+            <a href="{% url 'musica:artista_detail' album.artista.pk %}"><strong>{{ album.artista.nombre }}</strong></a> &bull;
+            <span>{{ album.anio|default:"Año N/A" }}</span> &bull;
+            <span>{{ canciones.count }} canciones</span>
+            {% if album.mbid %}
+                &bull; <span style="font-size:12px; color:#64b5f6;">MBID: {{ album.mbid|slice:":10" }}...</span>
+            {% endif %}
+        </div>
+
+        <div class="sf-hero-actions">
+            {% if canciones.first %}
+                <button class="sf-btn sf-btn-primary sf-btn-play-trigger"
+                        data-title="{{ canciones.first.titulo }}"
+                        data-artist="{{ album.artista.nombre }}"
+                        data-cover="{{ album.portada_o_default }}"
+                        data-duration="{{ canciones.first.duracion_seg }}">
+                    <i class="fas fa-play"></i> Reproducir álbum
+                </button>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'musica:toggle_favorito' 'album' album.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="sf-btn {% if es_favorito %}sf-btn-primary{% else %}sf-btn-secondary{% endif %}">
+                        <i class="fas fa-heart"></i> {% if es_favorito %}En favoritos{% else %}Favorito{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+
+            <a href="{% url 'musica:ticket_desde_musica' 'album' album.pk %}" class="sf-btn sf-btn-support">
+                <i class="fas fa-headset"></i> Contactar soporte
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- LISTA DE CANCIONES DEL ÁLBUM -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Pistas del álbum</h2>
+</div>
+<table class="sf-track-table" style="margin-bottom: 32px;">
+    <thead>
+        <tr>
+            <th class="sf-track-num">#</th>
+            <th>Título</th>
+            <th class="sf-track-duration">Duración</th>
+            <th class="sf-track-actions">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in canciones %}
+            <tr class="sf-track-row">
+                <td class="sf-track-cell sf-track-num">
+                    <button class="sf-ctrl-btn sf-btn-play-trigger"
+                            data-title="{{ c.titulo }}"
+                            data-artist="{{ album.artista.nombre }}"
+                            data-cover="{{ album.portada_o_default }}"
+                            data-duration="{{ c.duracion_seg }}">
+                        {{ c.numero_pista|default:forloop.counter }}
+                    </button>
+                </td>
+                <td class="sf-track-cell">
+                    <div class="sf-track-info">
+                        <a href="{% url 'musica:cancion_detail' c.pk %}" class="sf-track-title">{{ c.titulo }}</a>
+                        <span class="sf-track-artist">{{ album.artista.nombre }}</span>
+                    </div>
+                </td>
+                <td class="sf-track-cell sf-track-duration">{{ c.duracion_formateada }}</td>
+                <td class="sf-track-cell sf-track-actions">
+                    <a href="{% url 'musica:cancion_detail' c.pk %}" class="sf-btn sf-btn-secondary sf-btn-sm">Abrir</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" style="color:var(--sf-text-muted); padding:16px;">No hay canciones asignadas a este álbum.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- MÓDULO DE VALORACIONES Y RESEÑAS -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title"><i class="fas fa-star" style="color:#ffd700; margin-right:8px;"></i> Reseñas y Puntuaciones</h2>
+</div>
+
+{% if user.is_authenticated and form_resena %}
+    <div class="sf-form-card" style="margin-bottom: 28px;">
+        <h3 style="font-size: 16px; margin-bottom: 12px;">Deja tu valoración sobre este álbum</h3>
+        <form method="post" action="{% url 'musica:agregar_resena' 'album' album.pk %}">
+            {% csrf_token %}
+            <div class="sf-form-group">
+                <label class="sf-label">Puntuación:</label>
+                {{ form_resena.puntuacion }}
+            </div>
+            <div class="sf-form-group">
+                <label class="sf-label">Tu comentario:</label>
+                {{ form_resena.comentario }}
+            </div>
+            <button type="submit" class="sf-btn sf-btn-primary sf-btn-sm">Publicar reseña</button>
+        </form>
+    </div>
+{% endif %}
+
+<div style="display: flex; flex-direction: column; gap: 14px; max-width: 650px;">
+    {% for r in resenas %}
+        <div style="background-color: var(--sf-card-bg); padding: 18px; border-radius: var(--sf-radius-md); border: 1px solid var(--sf-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-weight: 700;">{{ r.usuario.usuario }}</span>
+                <span style="color: #ffd700; font-size: 14px;">
+                    {% for _ in "12345"|slice:r.puntuacion %}<i class="fas fa-star"></i>{% endfor %}
+                    <span style="color:var(--sf-text-muted); font-size:12px; margin-left:6px;">({{ r.puntuacion }}/5)</span>
+                </span>
+            </div>
+            {% if r.comentario %}
+                <p style="color: var(--sf-text-muted); font-size: 14px; margin-bottom: 8px;">{{ r.comentario }}</p>
+            {% endif %}
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #777;">
+                <span>{{ r.fecha|date:"d M Y" }}</span>
+                {% if user == r.usuario %}
+                    <form method="post" action="{% url 'musica:eliminar_resena' r.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none; border:none; color:var(--sf-danger); cursor:pointer; font-size:12px;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <p style="color: var(--sf-text-muted);">Aún no hay reseñas para este álbum. ¡Sé el primero en valorarlo!</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     # --- Aplicaciones propias del proyecto CallCenterGamer ---
     'administracion',                # App 2: Panel de soporte técnico, moderación y Analytics IA
     'online',                        # App 1: Portal de clientes, modelos de datos, auth y motor IA
+    'musica',                        # App 3: SoundFlow - Catálogo musical y soporte integrado
 ]
 
 # MIDDLEWARE: Capas de procesamiento secuencial por las que pasa cada petición
@@ -281,5 +282,28 @@ LOGGING = {
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
+        'musica': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
     },
 }
+
+# ==============================================================================
+# 12. SISTEMA DE CACHÉ Y PROVEEDORES EXTERNOS (SOUNDFLOW)
+# ==============================================================================
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'soundflow-cache',
+    }
+}
+
+# Configuración de integración con MusicBrainz y Cover Art Archive
+MUSICBRAINZ_BASE_URL = env.str('MUSICBRAINZ_BASE_URL', default='https://musicbrainz.org/ws/2')
+MUSICBRAINZ_USER_AGENT = env.str('MUSICBRAINZ_USER_AGENT', default='SoundFlow/1.0 ( contacto@example.com )')
+MUSICBRAINZ_TIMEOUT = env.int('MUSICBRAINZ_TIMEOUT', default=8)
+MUSICBRAINZ_CACHE_SECONDS = env.int('MUSICBRAINZ_CACHE_SECONDS', default=86400)
+COVER_ART_TIMEOUT = env.int('COVER_ART_TIMEOUT', default=6)
+

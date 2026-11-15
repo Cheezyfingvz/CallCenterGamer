@@ -23,7 +23,7 @@ def load_brand_config_from_env():
     # Lee la lista de categorías de tickets separadas por coma desde BRAND_CATEGORIES
     raw_categories = os.environ.get(
         'BRAND_CATEGORIES',
-        'hardware,software,conexion,cuenta,pago,rendimiento,otros',
+        'hardware,software,conexion,cuenta,pago,rendimiento,suscripciones,descargas,biblioteca,playlists,recomendaciones,reproductor,contenido_musical,problemas_tecnicos,otros',
     )
     categories = [c.strip().lower() for c in raw_categories.split(',') if c.strip()]
     # Garantiza que siempre exista la categoría comodín 'otros' como respaldo
@@ -32,31 +32,31 @@ def load_brand_config_from_env():
 
     return {
         # Nombre corto de la marca mostrado en la barra de navegación y títulos
-        'NAME': os.environ.get('BRAND_NAME', 'CallCenterGamer'),
+        'NAME': os.environ.get('BRAND_NAME', 'Call Center SoundFlow'),
         # Título principal del banner de bienvenida en la portada
-        'WELCOME_TITLE': os.environ.get('BRAND_WELCOME_TITLE', 'Bienvenido a Call of Gamers!'),
+        'WELCOME_TITLE': os.environ.get('BRAND_WELCOME_TITLE', 'Bienvenido a Call Center SoundFlow'),
         # Descripción o eslogan comercial de la empresa
         'SLOGAN': os.environ.get(
             'BRAND_SLOGAN',
-            'Comunicate con el mejor call center gamer, nosotros te brindaremos la '
-            'solución necesaria para tu problema, no dudes más!',
+            'Comunícate con el soporte oficial de SoundFlow, nosotros te brindaremos la '
+            'solución necesaria para tu música, listas y suscripciones.',
         ),
         # Título de la sección de disponibilidad de servicio
-        'SERVICE_TITLE': os.environ.get('BRAND_SERVICE_TITLE', 'Atención 24/7'),
+        'SERVICE_TITLE': os.environ.get('BRAND_SERVICE_TITLE', 'Soporte SoundFlow 24/7'),
         # Textos de llamada a la acción (Call To Action) inferiores
-        'CTA_TITLE': os.environ.get('BRAND_CTA_TITLE', 'Comunicate con nosotros'),
+        'CTA_TITLE': os.environ.get('BRAND_CTA_TITLE', 'Comunícate con nosotros'),
         'CTA_SUBTITLE': os.environ.get(
             'BRAND_CTA_SUBTITLE',
-            'Escribenos y nuestros profesionales solucionaran tu problema en tan solo un momento!',
+            'Escríbenos y nuestros especialistas resolverán tu consulta musical y técnica en tan solo un momento.',
         ),
-        # Clase de ícono FontAwesome mostrada junto al logo (ej. 'fas fa-gamepad' o 'fas fa-headset')
-        'ICON_CLASS': os.environ.get('BRAND_ICON_CLASS', 'fas fa-gamepad'),
+        # Clase de ícono FontAwesome mostrada junto al logo
+        'ICON_CLASS': os.environ.get('BRAND_ICON_CLASS', 'fas fa-wave-square'),
         # Ruta relativa dentro de static/ para el archivo de imagen de logo
         'LOGO_STATIC': os.environ.get('BRAND_LOGO_STATIC', 'img/LOGITO.png'),
         # Paleta de colores corporativos inyectada como variables CSS (:root)
-        'PRIMARY_COLOR': os.environ.get('BRAND_PRIMARY_COLOR', '#4E31E1'),
-        'SECONDARY_COLOR': os.environ.get('BRAND_SECONDARY_COLOR', '#673de6'),
-        'ACCENT_COLOR': os.environ.get('BRAND_ACCENT_COLOR', '#25c2b5'),
+        'PRIMARY_COLOR': os.environ.get('BRAND_PRIMARY_COLOR', '#1DB954'),
+        'SECONDARY_COLOR': os.environ.get('BRAND_SECONDARY_COLOR', '#181818'),
+        'ACCENT_COLOR': os.environ.get('BRAND_ACCENT_COLOR', '#1ed760'),
         # Dirección mostrada en el pie de página (footer)
         'FOOTER_ADDRESS': os.environ.get(
             'BRAND_FOOTER_ADDRESS',
@@ -65,7 +65,7 @@ def load_brand_config_from_env():
         # Instrucción de sistema (System Prompt) enviada al asistente de IA
         'AI_ROLE_PROMPT': os.environ.get(
             'BRAND_AI_ROLE_PROMPT',
-            'Eres un experto técnico en videojuegos y hardware gaming.',
+            'Eres un experto técnico en soporte de SoundFlow, música digital, streaming y helpdesk.',
         ),
         # Lista de categorías válidas para clasificar tickets en esta empresa
         'TICKET_CATEGORIES': categories,
@@ -105,7 +105,11 @@ def get_ticket_categories():
     return list(
         brand.get(
             'TICKET_CATEGORIES',
-            ['hardware', 'software', 'conexion', 'cuenta', 'pago', 'rendimiento', 'otros'],
+            [
+                'hardware', 'software', 'conexion', 'cuenta', 'pago', 'rendimiento',
+                'suscripciones', 'descargas', 'biblioteca', 'playlists', 'recomendaciones',
+                'reproductor', 'contenido_musical', 'problemas_tecnicos', 'otros'
+            ],
         )
     )
 

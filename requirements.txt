@@ -24,3 +24,7 @@ whitenoise>=6.6.0
 # --- Formularios (PPT 6: Crispy Forms) ---
 django-crispy-forms>=2.1
 crispy-bootstrap5>=2024.2
+
+# --- Peticiones HTTP para SoundFlow (MusicBrainz y Cover Art Archive) ---
+requests>=2.31.0
+

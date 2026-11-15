@@ -1,0 +1,107 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}Inicio — SoundFlow{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">Buenas tardes, {{ user.usuario|default:"Bienvenido a SoundFlow" }}</h1>
+    <p style="color: var(--sf-text-muted); font-size: 14px;">Explora música, descubre nuevos artistas y gestiona tus playlists en la plataforma.</p>
+</div>
+
+<!-- SECCIÓN: RECOMENDACIONES EXPLICABLES -->
+{% if recomendaciones %}
+<div class="sf-section-header">
+    <h2 class="sf-section-title"><i class="fas fa-magic" style="color:var(--sf-accent); margin-right:8px;"></i> Recomendado para ti</h2>
+</div>
+<div class="sf-grid">
+    {% for item in recomendaciones %}
+        <div class="sf-card">
+            <div class="sf-card-img-wrapper">
+                <img src="{{ item.cancion.portada_o_default }}" alt="{{ item.cancion.titulo }}" class="sf-card-img">
+                <button class="sf-card-play-btn sf-btn-play-trigger"
+                        data-title="{{ item.cancion.titulo }}"
+                        data-artist="{{ item.cancion.artista.nombre }}"
+                        data-cover="{{ item.cancion.portada_o_default }}"
+                        data-duration="{{ item.cancion.duracion_seg }}">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+            <a href="{% url 'musica:cancion_detail' item.cancion.pk %}" class="sf-card-title">{{ item.cancion.titulo }}</a>
+            <span class="sf-card-subtitle">{{ item.cancion.artista.nombre }}</span>
+            <div style="margin-top: 6px; font-size: 11px; color: var(--sf-accent); font-weight: 600;">
+                <i class="fas fa-info-circle"></i> {{ item.motivo }}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- SECCIÓN: ÁLBUMES POPULARES -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Álbumes destacados</h2>
+    <a href="{% url 'musica:catalogo' %}" class="sf-section-link">Ver catálogo completo</a>
+</div>
+<div class="sf-grid">
+    {% for album in albums_destacados %}
+        <div class="sf-card">
+            <div class="sf-card-img-wrapper">
+                <img src="{{ album.portada_o_default }}" alt="{{ album.titulo }}" class="sf-card-img">
+                {% if album.es_demo %}
+                    <span class="sf-badge-demo">Demo</span>
+                {% endif %}
+                <a href="{% url 'musica:album_detail' album.pk %}" class="sf-card-play-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <a href="{% url 'musica:album_detail' album.pk %}" class="sf-card-title">{{ album.titulo }}</a>
+            <span class="sf-card-subtitle">{{ album.artista.nombre }} &bull; {{ album.anio|default:"Lanzamiento" }}</span>
+        </div>
+    {% empty %}
+        <p style="color:var(--sf-text-muted);">No hay álbumes cargados en este momento.</p>
+    {% endfor %}
+</div>
+
+<!-- SECCIÓN: PLAYLISTS DESTACADAS -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Playlists de la comunidad</h2>
+    <a href="{% url 'musica:playlist_list' %}" class="sf-section-link">Ver todas</a>
+</div>
+<div class="sf-grid">
+    {% for pl in playlists_destacadas %}
+        <div class="sf-card">
+            <div class="sf-card-img-wrapper">
+                <img src="{% static 'musica/img/cover_placeholder.svg' %}" alt="{{ pl.nombre }}" class="sf-card-img">
+                {% if pl.es_demo %}<span class="sf-badge-demo">Demo</span>{% endif %}
+                <a href="{% url 'musica:playlist_detail' pl.pk %}" class="sf-card-play-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <a href="{% url 'musica:playlist_detail' pl.pk %}" class="sf-card-title">{{ pl.nombre }}</a>
+            <span class="sf-card-subtitle">Por {{ pl.usuario.usuario }} &bull; {{ pl.total_canciones }} pistas</span>
+        </div>
+    {% empty %}
+        <p style="color:var(--sf-text-muted);">No hay playlists públicas destacadas aún.</p>
+    {% endfor %}
+</div>
+
+<!-- SECCIÓN: ARTISTAS POPULARES -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Artistas populares</h2>
+</div>
+<div class="sf-grid">
+    {% for artista in artistas_populares %}
+        <div class="sf-card" style="text-align: center;">
+            <div class="sf-card-img-wrapper" style="border-radius: 50%;">
+                <img src="{{ artista.imagen_url|default:'/static/musica/img/cover_placeholder.svg' }}" alt="{{ artista.nombre }}" class="sf-card-img" style="border-radius:50%;">
+                <a href="{% url 'musica:artista_detail' artista.pk %}" class="sf-card-play-btn" style="right:calc(50% - 22px); bottom:10px;">
+                    <i class="fas fa-user"></i>
+                </a>
+            </div>
+            <a href="{% url 'musica:artista_detail' artista.pk %}" class="sf-card-title">{{ artista.nombre }}</a>
+            <span class="sf-card-subtitle">{{ artista.pais|default:"Artista" }}</span>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

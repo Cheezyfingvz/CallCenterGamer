@@ -1,230 +1,213 @@
-# CallCenterGamer
+# CallCenterGamer & SoundFlow
 
-Sistema de soporte técnico y gestión de tickets para gaming, desarrollado con Django. El proyecto combina un portal para clientes, un panel administrativo para técnicos y administradores, soporte multimarcas/white-label, y un asistente IA con fallback local cuando no hay clave de OpenAI configurada.
+Sistema integral que combina una plataforma de soporte técnico y gestión de tickets para gaming (**CallCenterGamer**) con una segunda aplicación web de catálogo y biblioteca musical (**SoundFlow**), inspirada visualmente en plataformas de streaming modernas, con integración desacoplada a **MusicBrainz** y **Cover Art Archive**, y sincronización bidireccional con el sistema de soporte.
 
-## Descripción general
+---
 
-CallCenterGamer es una plataforma web de helpdesk orientada al rubro gaming y tecnología, pero preparada para adaptarse a otras empresas mediante variables de entorno del tipo `BRAND_*`.
+## 🎵 SoundFlow (Aplicación Musical Integrada)
 
-Incluye:
+**SoundFlow** es un módulo Django independiente (`musica/`) que agrega un ecosistema musical completo a la solución:
 
-- Portal de clientes para crear tickets de soporte
-- Panel administrativo para atender, asignar y supervisar tickets
-- Gestión de usuarios con roles diferenciados
-- Soporte white-label con personalización visual y textos
-- Motor IA híbrido con OpenAI y fallback local
-- Base de datos SQLite3 lista para despliegue simple
-- Preparación para Render con `gunicorn` y `whitenoise`
+- **Catálogo musical**: Canciones, artistas, álbumes y playlists con metadatos reales o demostrativos.
+- **Búsqueda híbrida**: Búsqueda prioritaria en base de datos local SQLite con consulta complementaria a MusicBrainz Web Service v2 (`/recording`, `/release-group`, `/artist`).
+- **Portadas vía Cover Art Archive**: Obtención automatizada de miniaturas y portadas de lanzamientos mediante MBID, con imagen de respaldo local SVG para evitar enlaces rotos.
+- **Degradación controlada (Offline-First)**: La plataforma opera de forma autónoma sin depender de conexión a internet o ante caídas (HTTP 429 / 5xx / Timeouts) de los servicios externos.
+- **Reproductor visual interactivo**: Simulación completa (play/pause, barra de progreso, avance/retroceso, volumen) sin reproducción de audio real ni contenidos protegidos.
+- **Biblioteca personal y Playlists**: Marcado de favoritos (canciones, álbumes, artistas, playlists), creación y edición de playlists con control de propietario.
+- **Suscripciones y descargas simuladas**: Planes Free, Individual, Familiar y Estudiantes con simulación de upgrades y descargas offline registradas en SQLite.
+- **Reseñas**: Sistema de valoraciones de 1 a 5 estrellas con comentarios para álbumes y playlists.
+- **Recomendaciones explicables**: Motor local basado en favoritos, historial de escuchas y popularidad en la comunidad, sin requerir IA externa.
+- **Integración funcional con Call Center**: Botón "Contactar soporte" en canciones, álbumes, artistas, playlists, suscripciones y descargas que precarga el formulario del Call Center asociando la entidad al ticket.
 
-## Stack tecnológico
+---
 
-- Python 3.12+
-- Django 5.2+
-- SQLite3
-- Bootstrap / crispy-forms
-- OpenAI Python SDK (opcional)
-- Gunicorn
-- WhiteNoise
-- django-environ
-
-## Estructura del proyecto
+## 🎧 Arquitectura de la Integración
 
 ```text
 CallCenterGamer/
-├── CallCenterGamer/              # Proyecto principal Django
-│   ├── __init__.py
-│   ├── settings.py               # Configuración general
-│   ├── urls.py                  # Enrutamiento global
-│   ├── brand_config.py          # Configuración white-label
-│   ├── asgi.py
-│   └── wsgi.py
-├── online/                      # App del cliente y IA
-│   ├── models.py
-│   ├── views.py
-│   ├── forms.py
-│   ├── ia_utils.py
-│   ├── recomendaciones_ia.py
-│   ├── templates/
-│   ├── static/
-│   └── management/
-├── administracion/              # Panel administrativo
-│   ├── views.py
-│   ├── forms.py
-│   ├── templates/
-│   └── static/
-├── logs/                        # Archivos de auditoría
-├── db.sqlite3                    # Base de datos local
-├── manage.py                    # Punto de entrada Django
-├── requirements.txt             # Dependencias del proyecto
-├── .env.example                 # Variables de entorno de ejemplo
-├── build.sh                     # Script de despliegue
-├── render.yaml                  # Configuración para Render
-├── Start Servidor Web.bat       # Arranque rápido en Windows
-├── PROJECT_DOSSIER_AI.md        # Documento técnico del proyecto
-├── agent.md                     # Configuración del workflow del agente
-└── README.md                    # Documentación del repositorio
+├── CallCenterGamer/              # Configuración global del proyecto
+│   ├── settings.py               # SQLite3, WhiteNoise, Crispy, LocMemCache, MusicBrainz
+│   ├── urls.py                   # Enrutador principal (Call Center + /musica/)
+│   └── brand_config.py           # Motor White-Label y catálogo de categorías
+├── online/                       # App 1: Portal del Cliente y Helpdesk
+│   ├── models.py                 # Usuario, Preguntas (+ contenido_musical FK), Respuesta
+│   ├── views.py                  # Vistas del Call Center
+│   └── forms.py                  # Formularios del cliente y de administración
+├── administracion/               # App 2: Panel de Administración y Técnicos
+│   ├── views.py                  # Dashboard, gestión de tickets y usuarios
+│   └── templates/                # Plantillas con ficha musical para el agente
+├── musica/                       # App 3: SoundFlow (Módulo Musical)
+│   ├── models.py                 # Genero, Artista, Album, Cancion, Playlist,
+│   │                             # ElementoPlaylist, Favorito, PlanSuscripcion,
+│   │                             # Suscripcion, Descarga, Resena, ContenidoMusical
+│   ├── services/
+│   │   ├── base.py               # Interfaz abstracta BaseMusicProvider
+│   │   ├── musicbrainz.py        # Cliente HTTP MusicBrainz con timeouts y caché
+│   │   ├── cover_art.py          # Cliente Cover Art Archive con miniaturas
+│   │   └── catalog.py            # Orquestador de catálogo híbrido y persistencia
+│   ├── selectors.py              # Consultas optimizadas de biblioteca y planes
+│   ├── forms.py                  # PlaylistForm, ResenaForm, TicketMusicaForm
+│   ├── views.py                  # Controladores de SoundFlow
+│   ├── urls.py                   # Rutas bajo el namespace 'musica'
+│   ├── tests.py                  # 19 pruebas unitarias y de integración con mocks
+│   ├── management/commands/
+│   │   └── seed_musica.py        # Poblado inicial con datos ficticios demostrativos
+│   ├── static/musica/
+│   │   ├── css/soundflow.css     # Estética oscura moderna (carbón, verde acento)
+│   │   ├── js/player.js          # Lógica interactiva del reproductor visual
+│   │   └── img/cover_placeholder.svg # Portada genérica local de respaldo
+│   └── templates/musica/         # 14 plantillas responsivas de SoundFlow
+├── logs/                         # Archivo rotativo de auditoría
+├── db.sqlite3                    # Base de datos relacional SQLite3 exclusiva
+├── requirements.txt              # Dependencias (Django, requests, whitenoise, etc.)
+└── README.md
 ```
 
-## Características principales
+---
 
-### 1. Portal de clientes
+## 🛠️ Stack Tecnológico
 
-- Registro e inicio de sesión
-- Creación y seguimiento de tickets
-- Visualización del historial de conversaciones
-- Filtros por estado, prioridad y categoría
-- Búsqueda de ayuda con soporte IA
+- **Python**: 3.12+
+- **Framework Web**: Django 5.2+ / 6.x
+- **Base de Datos**: SQLite3 nativo
+- **Proveedor de Metadatos**: MusicBrainz Web Service v2 (backend)
+- **Proveedor de Portadas**: Cover Art Archive
+- **Estilos & UI**: CSS3 responsivo oscuro con acento verde (`#1DB954`) + Bootstrap 5 / Crispy Forms
+- **Caché**: Django Cache Framework (`LocMemCache`)
+- **Producción**: Gunicorn + WhiteNoise en Render
 
-### 2. Panel administrativo
+---
 
-- Gestión de usuarios
-- Atención de tickets
-- Cambio de estados y prioridades
-- Asignación de técnicos
-- Analytics y análisis IA
-- Seguridad basada en permisos
+## 🌐 Configuración de MusicBrainz y Cover Art Archive
 
-### 3. White-label
+La integración opera **exclusivamente desde el backend de Django** (nunca llamadas cliente desde el navegador). Envía encabezados descriptivos, limita timeouts y utiliza el sistema de caché de Django (`LocMemCache` o Redis) para no saturar las APIs públicas.
 
-El sistema puede cambiar branding mediante variables de entorno como:
+Variables configurables en `.env`:
 
-- `BRAND_NAME`
-- `BRAND_WELCOME_TITLE`
-- `BRAND_SLOGAN`
-- `BRAND_PRIMARY_COLOR`
-- `BRAND_SECONDARY_COLOR`
-- `BRAND_ACCENT_COLOR`
-- `BRAND_AI_ROLE_PROMPT`
-- `BRAND_CATEGORIES`
+```env
+# URL base de MusicBrainz WS/2
+MUSICBRAINZ_BASE_URL=https://musicbrainz.org/ws/2
 
-### 4. IA híbrida
+# User-Agent institucional (requerido por las políticas de MusicBrainz)
+MUSICBRAINZ_USER_AGENT=SoundFlow/1.0 ( contacto@example.com )
 
-- Si existe `OPENAI_API_KEY`, usa OpenAI para análisis y respuesta
-- Si no existe la clave o falla la petición, usa un fallback local heurístico
-- Reduce dependencia de servicios externos para mantener continuidad operativa
+# Timeout de peticiones HTTP en segundos (5 - 10s recomendado)
+MUSICBRAINZ_TIMEOUT=8
 
-## Requisitos
+# Tiempo de vida de la caché en segundos (86400s = 24 horas)
+MUSICBRAINZ_CACHE_SECONDS=86400
 
-- Python 3.12+
-- pip
-- Entorno virtual recomendado
+# Timeout para consulta de portadas en Cover Art Archive
+COVER_ART_TIMEOUT=6
+```
 
-## Configuración
+### Funcionamiento sin conexión externa (Degradación Controlada)
+1. Si MusicBrainz no responde, produce Timeout o devuelve error HTTP 429/5xx, el sistema no se cae: busca y entrega los resultados almacenados localmente en SQLite.
+2. Si un release no tiene portada en Cover Art Archive, se muestra automáticamente el vector SVG local `cover_placeholder.svg`.
+3. Todos los datos de demostración incluidos se marcan con el flag `es_demo=True`.
 
-1. Clona el repositorio:
+---
 
+## 🎫 Integración de Tickets SoundFlow <-> Call Center
+
+Desde cualquier vista de SoundFlow, los usuarios pueden reportar problemas con un solo clic:
+1. El usuario hace clic en **"Contactar soporte"** en una canción, álbum, artista, playlist, suscripción o descarga.
+2. SoundFlow genera o recupera una entidad `ContenidoMusical` local que guarda nombre, MBID, miniatura y enlace interno.
+3. Se precarga el formulario con la categoría adecuada (`contenido_musical`, `reproductor`, `suscripciones`, `descargas`, etc.).
+4. El ticket se almacena en la tabla original `online_preguntas` con su FK opcional `contenido_musical`.
+5. El agente técnico visualiza en su panel la tarjeta del contenido musical con miniatura y el botón **"Abrir en SoundFlow"** para auditar el recurso.
+6. Si la referencia musical se elimina en el futuro, el ticket se conserva íntegramente gracias a `on_delete=models.SET_NULL`.
+
+---
+
+## 🚀 Instalación y Puesta en Marcha
+
+1. Clonar el repositorio y entrar a la carpeta:
 ```bash
 git clone https://github.com/Cheezyfingvz/CallCenterGamer.git
 cd CallCenterGamer
 ```
 
-2. Crea un entorno virtual:
-
+2. Crear y activar entorno virtual:
 ```bash
 python -m venv .venv
+# En Windows:
+.\.venv\Scripts\Activate.ps1
+# En Linux/macOS:
 source .venv/bin/activate
 ```
 
-En Windows PowerShell:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-3. Instala dependencias:
-
+3. Instalar dependencias:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Configura variables de entorno:
-
-Copia el archivo de ejemplo:
-
+4. Configurar variables de entorno:
 ```bash
 cp .env.example .env
 ```
 
-Luego ajusta los valores de acuerdo a tu entorno. Los parámetros más importantes incluyen:
-
-```env
-DJANGO_DEBUG=True
-DJANGO_SECRET_KEY=tu-secret-key
-OPENAI_API_KEY=
-BRAND_NAME=CallCenterGamer
-ALLOWED_HOSTS=localhost,127.0.0.1
-```
-
-## Ejecución local
-
-Realiza migraciones y levanta el proyecto:
-
+5. Aplicar migraciones:
 ```bash
 python manage.py migrate
+```
+
+6. Cargar datos de demostración:
+```bash
+# Usuarios y tickets base del Call Center:
+python manage.py seed_initial_data
+
+# Catálogo musical completo de SoundFlow:
+python manage.py seed_musica
+```
+
+7. Iniciar el servidor de desarrollo:
+```bash
 python manage.py runserver 127.0.0.1:8000
 ```
 
-Si deseas cargar usuarios y tickets iniciales de demostración:
+Rutas de acceso:
+- **SoundFlow**: `http://127.0.0.1:8000/musica/`
+- **Call Center Clientes**: `http://127.0.0.1:8000/Inicio/<id>/`
+- **Panel Técnico / Admin**: `http://127.0.0.1:8000/Administracion/`
+- **Admin Nativo Django**: `http://127.0.0.1:8000/admin/`
 
-```bash
-python manage.py seed_initial_data
-```
+---
 
-## Usuarios de prueba
+## 👥 Usuarios de Prueba
 
-El proyecto incluye usuarios de ejemplo para pruebas rápidas:
+| Rol | Usuario | Email | Contraseña | Acceso |
+| --- | --- | --- | --- | --- |
+| Administrador | `admin` | `admin@gmail.com` | `admin123` | Call Center Admin + SoundFlow |
+| Técnico | `tecnico` | `tecnico@gmail.com` | `tecnico123` | Call Center Helpdesk + SoundFlow |
+| Cliente | `usuario` | `usuario@gmail.com` | `usuario123` | Portal Cliente + SoundFlow |
 
-| Rol | Usuario | Email | Contraseña |
-| --- | --- | --- | --- |
-| Administrador | `admin` | `admin@gmail.com` | `admin123` |
-| Técnico | `tecnico` | `tecnico@gmail.com` | `tecnico123` |
-| Cliente | `usuario` | `usuario@gmail.com` | `usuario123` |
+---
 
-## Pruebas
+## 🧪 Pruebas Automatizadas
 
-Ejecuta la suite de pruebas del proyecto:
+El proyecto cuenta con **47 tests unitarios y de integración** (28 del Call Center original + 19 de SoundFlow) ejecutables sin conexión externa mediante Mocks:
 
 ```bash
 python manage.py test
 ```
 
-## Despliegue
-
-Este proyecto está preparado para desplegarse en Render usando `gunicorn` y `whitenoise`.
-
-Comandos de producción utilizados:
-
-```bash
-pip install -r requirements.txt
-python manage.py collectstatic --noinput
-python manage.py migrate --noinput
-python manage.py seed_initial_data
-```
-
-Start command recomendado:
-
-```bash
-gunicorn CallCenterGamer.wsgi:application
-```
-
-## Notas importantes
-
-- La base de datos por defecto es SQLite3.
-- El proyecto usa un modelo de usuario customizado para roles y permisos.
-- El comportamiento del branding y del asistente puede adaptarse dinámicamente por variables de entorno.
-- Si no configuras `OPENAI_API_KEY`, el sistema seguirá funcionando con lógica local para clasificación y recomendaciones.
-
-## Licencia
-
-No se ha especificado una licencia en este repositorio. Si necesitas usarlo en producción o redistribuirlo, revisa primero el titular de derechos del proyecto.
-
-## Contacto / mantenimiento
-
-Repositorio: https://github.com/Cheezyfingvz/CallCenterGamer
-
-Proyecto desplegado: https://callcentergamer.onrender.com/
+Verificaciones ejecutadas:
+- Control de acceso RBAC y prevención de IDOR.
+- Fallback heurístico local de IA cuando no hay API Key de OpenAI.
+- Consulta desacoplada a MusicBrainz (éxito, vacío, HTTP 429, 500, timeouts).
+- Caché de resultados en memoria.
+- Portadas en Cover Art Archive y placeholder de respaldo.
+- CRUD de Playlists y control estricto de propiedad.
+- Restricciones de unicidad de MBID y validación de reseñas 1-5 estrellas.
+- Creación de tickets desde canciones/álbumes y preservación `SET_NULL`.
+- Compatibilidad retroactiva de tickets clásicos sin referencia musical.
 
 ---
 
-Este README fue generado para documentar la estructura, instalación y operación del proyecto CallCenterGamer.
+## ⚠️ Limitaciones Conocidas y Alcance Académico
+
+- **Sin streaming real**: No se transmiten archivos MP3/AAC con derechos de autor; el reproductor es una simulación visual completa.
+- **Sin videos musicales**: La plataforma se limita al catálogo y fichas de audio/álbum.
+- **Sin pasarelas de pago reales**: Las suscripciones y renovaciones son demostraciones de base de datos SQLite.
+- **Caché en memoria**: Por defecto utiliza `LocMemCache`. Para entornos distribuidos en clúster se sugiere Redis.

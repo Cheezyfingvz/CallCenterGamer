@@ -1,0 +1,63 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}Contactar Soporte — SoundFlow{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 8px;">Contactar al Soporte de SoundFlow</h1>
+    <p style="color: var(--sf-text-muted); font-size: 14px;">Abre un ticket con nuestros especialistas de Call Center SoundFlow asociado a este contenido.</p>
+</div>
+
+<!-- VISTA PREVIA DEL CONTENIDO ASOCIADO -->
+{% if contenido %}
+<div class="sf-support-preview-card">
+    <img src="{{ contenido.portada_o_default }}" alt="{{ contenido.nombre }}">
+    <div>
+        <span class="sf-support-badge">{{ contenido.get_tipo_display }}</span>
+        <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 4px;">{{ contenido.nombre }}</h3>
+        <p style="font-size: 13px; color: var(--sf-text-muted);">{{ contenido.detalles_extra }}</p>
+        {% if contenido.mbid %}
+            <span style="font-size: 11px; color: #64b5f6;">MusicBrainz ID: {{ contenido.mbid }}</span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- FORMULARIO DE TICKET -->
+<div class="sf-form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="sf-form-group">
+            <label class="sf-label">Título del ticket *</label>
+            {{ form.Titulo }}
+            {% if form.Titulo.errors %}<span style="color:var(--sf-danger); font-size:12px;">{{ form.Titulo.errors.0 }}</span>{% endif %}
+        </div>
+
+        <div class="sf-form-group">
+            <label class="sf-label">Categoría *</label>
+            {{ form.categoria }}
+            {% if form.categoria.errors %}<span style="color:var(--sf-danger); font-size:12px;">{{ form.categoria.errors.0 }}</span>{% endif %}
+        </div>
+
+        <div class="sf-form-group">
+            <label class="sf-label">Nivel de Urgencia / Prioridad</label>
+            {{ form.prioridad }}
+        </div>
+
+        <div class="sf-form-group">
+            <label class="sf-label">Detalle del problema *</label>
+            {{ form.Pregunta }}
+            {% if form.Pregunta.errors %}<span style="color:var(--sf-danger); font-size:12px;">{{ form.Pregunta.errors.0 }}</span>{% endif %}
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button type="submit" class="sf-btn sf-btn-primary">
+                <i class="fas fa-paper-plane"></i> Enviar Ticket al Call Center
+            </button>
+            <a href="javascript:history.back()" class="sf-btn sf-btn-secondary">Volver</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

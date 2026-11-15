@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SoundFlow — Música y Streaming{% endblock %}</title>
+    <!-- FontAwesome y Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Estilos SoundFlow -->
+    <link rel="stylesheet" href="{% static 'musica/css/soundflow.css' %}?v=1.0">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="sf-body">
+
+<div class="sf-app-container">
+    <!-- Sidebar Navegación Lateral -->
+    <aside class="sf-sidebar">
+        <a href="{% url 'musica:inicio' %}" class="sf-brand-logo">
+            <i class="fas fa-wave-square"></i>
+            <span>SoundFlow</span>
+        </a>
+
+        <nav class="sf-nav-group">
+            <a href="{% url 'musica:inicio' %}" class="sf-nav-item {% if request.resolver_match.url_name == 'inicio' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>Inicio</span>
+            </a>
+            <a href="{% url 'musica:buscar' %}" class="sf-nav-item {% if request.resolver_match.url_name == 'buscar' %}active{% endif %}">
+                <i class="fas fa-search"></i>
+                <span>Buscar</span>
+            </a>
+            <a href="{% url 'musica:catalogo' %}" class="sf-nav-item {% if request.resolver_match.url_name == 'catalogo' %}active{% endif %}">
+                <i class="fas fa-compact-disc"></i>
+                <span>Catálogo</span>
+            </a>
+        </nav>
+
+        <nav class="sf-nav-group">
+            <span class="sf-nav-title">Tu Colección</span>
+            <a href="{% url 'musica:biblioteca' %}" class="sf-nav-item {% if request.resolver_match.url_name == 'biblioteca' %}active{% endif %}">
+                <i class="fas fa-bookmark"></i>
+                <span>Tu Biblioteca</span>
+            </a>
+            <a href="{% url 'musica:playlist_list' %}" class="sf-nav-item {% if 'playlist' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-list-music"></i>
+                <span>Tus Playlists</span>
+            </a>
+            <a href="{% url 'musica:suscripcion' %}" class="sf-nav-item {% if request.resolver_match.url_name == 'suscripcion' %}active{% endif %}">
+                <i class="fas fa-crown"></i>
+                <span>Suscripción</span>
+            </a>
+            <a href="{% url 'musica:mis_tickets' %}" class="sf-nav-item {% if request.resolver_match.url_name == 'mis_tickets' %}active{% endif %}">
+                <i class="fas fa-headset"></i>
+                <span>Mis Tickets Música</span>
+            </a>
+        </nav>
+
+        <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--sf-border);">
+            <span class="sf-nav-title">Call Center SoundFlow</span>
+            <a href="{% if user.is_authenticated %}{% if user.admin or user.tecnico %}{% url 'administracion' %}{% else %}{% url 'inicio' user.id %}{% endif %}{% else %}{% url 'index' %}{% endif %}" class="sf-nav-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>Volver al Call Center</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Área de Contenido Principal -->
+    <main class="sf-main-content">
+        <!-- Topbar Superior -->
+        <header class="sf-topbar">
+            <div>
+                {% block topbar_left %}{% endblock %}
+            </div>
+
+            <div class="sf-user-menu">
+                {% if user.is_authenticated %}
+                    <div class="sf-user-badge">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ user.usuario }}</span>
+                        {% if user.admin %}<span style="color:#ff6b6b; font-size:10px;">Admin</span>{% endif %}
+                    </div>
+                    <form method="post" action="{% url 'Logout' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="sf-btn sf-btn-secondary sf-btn-sm">
+                            <i class="fas fa-sign-out-alt"></i> Salir
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'Login' %}" class="sf-btn sf-btn-secondary sf-btn-sm">Iniciar Sesión</a>
+                    <a href="{% url 'Register' %}" class="sf-btn sf-btn-primary sf-btn-sm">Registrarse</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Mensajes Flash -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="sf-alert {% if message.tags == 'error' %}sf-alert-error{% elif message.tags == 'success' %}sf-alert-success{% else %}sf-alert-info{% endif %}">
+                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<!-- Reproductor Visual Sticky (Bottom Bar) -->
+<footer class="sf-player-bar" id="sf-player-bar">
+    <div class="sf-player-left">
+        <img src="{% static 'musica/img/cover_placeholder.svg' %}" alt="Portada" class="sf-player-cover" id="sf-player-cover">
+        <div class="sf-player-details">
+            <span class="sf-player-title" id="sf-player-title">SoundFlow Player</span>
+            <span class="sf-player-artist" id="sf-player-artist">Selecciona una pista</span>
+        </div>
+    </div>
+
+    <div class="sf-player-center">
+        <div class="sf-player-controls">
+            <button class="sf-ctrl-btn" id="sf-prev-btn" title="Reiniciar canción"><i class="fas fa-step-backward"></i></button>
+            <button class="sf-play-main-btn" id="sf-play-btn" title="Reproducir / Pausar"><i class="fas fa-play" id="sf-play-icon"></i></button>
+            <button class="sf-ctrl-btn" id="sf-next-btn" title="Avanzar 15s"><i class="fas fa-step-forward"></i></button>
+        </div>
+        <div class="sf-playback-bar-container">
+            <span class="sf-time-text" id="sf-current-time">0:00</span>
+            <div class="sf-progress-bar" id="sf-progress-bar">
+                <div class="sf-progress-fill" id="sf-progress-fill"></div>
+            </div>
+            <span class="sf-time-text" id="sf-duration">3:30</span>
+        </div>
+    </div>
+
+    <div class="sf-player-right">
+        <button class="sf-ctrl-btn" title="Reproducción simulada activa" style="color:var(--sf-accent);">
+            <i class="fas fa-broadcast-tower"></i>
+        </button>
+        <i class="fas fa-volume-up" id="sf-vol-icon" style="color:var(--sf-text-muted); font-size:14px;"></i>
+        <input type="range" class="sf-volume-slider" id="sf-volume-slider" min="0" max="100" value="75">
+    </div>
+</footer>
+
+<script src="{% static 'musica/js/player.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

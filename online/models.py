@@ -253,6 +253,16 @@ class Preguntas(models.Model):
         limit_choices_to=Q(tecnico=True) | Q(admin=True),
     )
 
+    # Referencia opcional a contenido musical de SoundFlow (Integración SoundFlow <-> Call Center)
+    contenido_musical = models.ForeignKey(
+        'musica.ContenidoMusical',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tickets',
+        verbose_name='Contenido musical relacionado',
+    )
+
     def __str__(self):
         """Representación legible del ticket mostrando su ID y Título."""
         return f"{self.idPregunta} - {self.Titulo}"

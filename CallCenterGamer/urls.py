@@ -9,7 +9,7 @@ correspondiente Vista (función o clase) en las aplicaciones `online` y
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 # Importación de vistas del portal del cliente y autenticación (App `online`)
 from online.views import (
@@ -58,4 +58,7 @@ urlpatterns = [
     path('Inicio/<int:id>/', Inicio, name='inicio'),
     # Hilo de conversación de un ticket específico (sin el parámetro decorativo idUser)
     path('Respuesta/<int:idPregunta>/', ViewRespuestas, name='respuestas'),
+
+    # 6. Aplicación musical SoundFlow (catálogo, playlists, favoritos y soporte)
+    path('musica/', include('musica.urls')),
 ]

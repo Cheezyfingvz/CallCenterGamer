@@ -1,0 +1,59 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}Tus Playlists — SoundFlow{% endblock %}
+
+{% block content %}
+<div class="sf-section-header" style="margin-top: 0;">
+    <div>
+        <h1 style="font-size: 30px; font-weight: 800;">Tus Playlists</h1>
+        <p style="color: var(--sf-text-muted); font-size: 14px;">Administra tus colecciones y listas de canciones.</p>
+    </div>
+    <a href="{% url 'musica:playlist_create' %}" class="sf-btn sf-btn-primary">
+        <i class="fas fa-plus"></i> Crear Playlist
+    </a>
+</div>
+
+<!-- MIS PLAYLISTS -->
+<div class="sf-grid" style="margin-bottom: 36px;">
+    {% for pl in mis_playlists %}
+        <div class="sf-card">
+            <div class="sf-card-img-wrapper">
+                <img src="{% static 'musica/img/cover_placeholder.svg' %}" alt="{{ pl.nombre }}" class="sf-card-img">
+                <a href="{% url 'musica:playlist_detail' pl.pk %}" class="sf-card-play-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <a href="{% url 'musica:playlist_detail' pl.pk %}" class="sf-card-title">{{ pl.nombre }}</a>
+            <span class="sf-card-subtitle">{{ pl.total_canciones }} pistas &bull; {% if pl.publica %}Pública{% else %}Privada{% endif %}</span>
+        </div>
+    {% empty %}
+        <div style="grid-column: 1 / -1; padding: 24px; background: var(--sf-card-bg); border-radius: var(--sf-radius-md); text-align: center;">
+            <p style="color: var(--sf-text-muted); margin-bottom: 12px;">Aún no has creado ninguna playlist personal.</p>
+            <a href="{% url 'musica:playlist_create' %}" class="sf-btn sf-btn-secondary sf-btn-sm">¡Crea tu primera lista!</a>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- PLAYLISTS DE LA COMUNIDAD -->
+{% if playlists_comunidad %}
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Playlists recomendadas de la comunidad</h2>
+</div>
+<div class="sf-grid">
+    {% for pl in playlists_comunidad %}
+        <div class="sf-card">
+            <div class="sf-card-img-wrapper">
+                <img src="{% static 'musica/img/cover_placeholder.svg' %}" alt="{{ pl.nombre }}" class="sf-card-img">
+                <a href="{% url 'musica:playlist_detail' pl.pk %}" class="sf-card-play-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <a href="{% url 'musica:playlist_detail' pl.pk %}" class="sf-card-title">{{ pl.nombre }}</a>
+            <span class="sf-card-subtitle">Por {{ pl.usuario.usuario }} &bull; {{ pl.total_canciones }} pistas</span>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

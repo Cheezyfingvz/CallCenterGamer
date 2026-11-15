@@ -1,0 +1,101 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}{{ cancion.titulo }} — SoundFlow{% endblock %}
+
+{% block content %}
+<div class="sf-hero-header">
+    <img src="{{ cancion.portada_o_default }}" alt="{{ cancion.titulo }}" class="sf-hero-cover">
+    <div class="sf-hero-info">
+        <span class="sf-hero-type">Canción {% if cancion.es_demo %}<span class="sf-badge-demo" style="position:static; display:inline-block; margin-left:8px;">Demo</span>{% endif %}</span>
+        <h1 class="sf-hero-title">{{ cancion.titulo }}</h1>
+        <div class="sf-hero-meta">
+            <a href="{% url 'musica:artista_detail' cancion.artista.pk %}"><strong>{{ cancion.artista.nombre }}</strong></a> &bull;
+            {% if cancion.album %}
+                <a href="{% url 'musica:album_detail' cancion.album.pk %}">{{ cancion.album.titulo }}</a> &bull;
+            {% endif %}
+            <span><i class="far fa-clock"></i> {{ cancion.duracion_formateada }}</span>
+            {% if cancion.mbid %}
+                &bull; <span style="font-size:12px; color:#64b5f6;">MBID: {{ cancion.mbid|slice:":10" }}...</span>
+            {% endif %}
+        </div>
+
+        <div class="sf-hero-actions">
+            <button class="sf-btn sf-btn-primary sf-btn-play-trigger"
+                    data-title="{{ cancion.titulo }}"
+                    data-artist="{{ cancion.artista.nombre }}"
+                    data-cover="{{ cancion.portada_o_default }}"
+                    data-duration="{{ cancion.duracion_seg }}">
+                <i class="fas fa-play"></i> Reproducir pista
+            </button>
+
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'musica:toggle_favorito' 'cancion' cancion.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="sf-btn {% if es_favorito %}sf-btn-primary{% else %}sf-btn-secondary{% endif %}">
+                        <i class="fas fa-heart"></i> {% if es_favorito %}En favoritos{% else %}Favorito{% endif %}
+                    </button>
+                </form>
+
+                <form method="post" action="{% url 'musica:descarga_simulada' cancion.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="sf-btn sf-btn-secondary" title="Descargar simulación offline">
+                        <i class="fas fa-arrow-circle-down"></i> Descargar (Offline)
+                    </button>
+                </form>
+            {% endif %}
+
+            <a href="{% url 'musica:ticket_desde_musica' 'cancion' cancion.pk %}" class="sf-btn sf-btn-support">
+                <i class="fas fa-headset"></i> Contactar soporte
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- AGREGAR A PLAYLIST -->
+{% if user.is_authenticated and mis_playlists %}
+    <div class="sf-form-card" style="margin-top: 24px;">
+        <h3 style="font-size: 16px; margin-bottom: 12px;"><i class="fas fa-plus"></i> Añadir esta canción a una de tus Playlists</h3>
+        <form method="post" action="" id="form-add-pl" style="display: flex; gap: 12px; align-items: center;">
+            {% csrf_token %}
+            <input type="hidden" name="cancion_id" value="{{ cancion.pk }}">
+            <select id="select-playlist" class="sf-select" style="flex: 1;" onchange="updateFormAction(this.value)">
+                <option value="">-- Selecciona una playlist --</option>
+                {% for pl in mis_playlists %}
+                    <option value="{% url 'musica:playlist_add_cancion' pl.pk %}">{{ pl.nombre }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="sf-btn sf-btn-primary sf-btn-sm" id="btn-add-pl" disabled>Agregar</button>
+        </form>
+    </div>
+
+    <script>
+        function updateFormAction(url) {
+            const form = document.getElementById('form-add-pl');
+            const btn = document.getElementById('btn-add-pl');
+            if (url) {
+                form.action = url;
+                btn.disabled = false;
+            } else {
+                form.action = "";
+                btn.disabled = true;
+            }
+        }
+    </script>
+{% endif %}
+
+<!-- DETALLES TÉCNICOS DE LA PISTA -->
+<div style="background-color: var(--sf-card-bg); padding: 24px; border-radius: var(--sf-radius-md); margin-top: 28px; border: 1px solid var(--sf-border); max-width: 650px;">
+    <h3 style="font-size: 16px; margin-bottom: 14px;"><i class="fas fa-info-circle"></i> Metadatos de la Pista</h3>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--sf-text-muted);">
+        <li><strong style="color:var(--sf-text);">Identificador Local SQLite:</strong> #{{ cancion.id }}</li>
+        {% if cancion.mbid %}
+            <li><strong style="color:var(--sf-text);">MBID MusicBrainz:</strong> <code>{{ cancion.mbid }}</code></li>
+        {% endif %}
+        <li><strong style="color:var(--sf-text);">Duración exacta:</strong> {{ cancion.duracion_seg }} segundos</li>
+        <li><strong style="color:var(--sf-text);">Fecha de sincronización local:</strong> {{ cancion.fecha_sync|date:"Y-m-d H:i" }}</li>
+        <li><strong style="color:var(--sf-text);">Estado de datos:</strong> {% if cancion.es_demo %}<span style="color:var(--sf-warning);">Demostración Académica Local</span>{% else %}<span style="color:var(--sf-accent);">Sincronizado vía MusicBrainz</span>{% endif %}</li>
+    </ul>
+</div>
+
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}{{ playlist.nombre }} — SoundFlow{% endblock %}
+
+{% block content %}
+<div class="sf-hero-header">
+    <img src="{% static 'musica/img/cover_placeholder.svg' %}" alt="{{ playlist.nombre }}" class="sf-hero-cover">
+    <div class="sf-hero-info">
+        <span class="sf-hero-type">Playlist {% if playlist.publica %}&bull; Pública{% else %}&bull; Privada{% endif %}</span>
+        <h1 class="sf-hero-title">{{ playlist.nombre }}</h1>
+        {% if playlist.descripcion %}<p style="color:var(--sf-text-muted); font-size:14px;">{{ playlist.descripcion }}</p>{% endif %}
+        <div class="sf-hero-meta">
+            <span>Creada por <strong>{{ playlist.usuario.usuario }}</strong></span> &bull;
+            <span>{{ elementos.count }} canciones</span> &bull;
+            <span>Actualizada {{ playlist.fecha_actualizacion|date:"d M Y" }}</span>
+        </div>
+
+        <div class="sf-hero-actions">
+            {% if elementos.first %}
+                <button class="sf-btn sf-btn-primary sf-btn-play-trigger"
+                        data-title="{{ elementos.first.cancion.titulo }}"
+                        data-artist="{{ elementos.first.cancion.artista.nombre }}"
+                        data-cover="{{ elementos.first.cancion.portada_o_default }}"
+                        data-duration="{{ elementos.first.cancion.duracion_seg }}">
+                    <i class="fas fa-play"></i> Reproducir lista
+                </button>
+            {% endif %}
+
+            {% if user.is_authenticated and not es_duenio %}
+                <form method="post" action="{% url 'musica:toggle_favorito' 'playlist' playlist.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="sf-btn {% if es_favorito %}sf-btn-primary{% else %}sf-btn-secondary{% endif %}">
+                        <i class="fas fa-heart"></i> {% if es_favorito %}Guardada{% else %}Guardar{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+
+            {% if es_duenio %}
+                <a href="{% url 'musica:playlist_edit' playlist.pk %}" class="sf-btn sf-btn-secondary">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                <form method="post" action="{% url 'musica:playlist_delete' playlist.pk %}" style="display:inline;" onsubmit="return confirm('¿Seguro que deseas eliminar esta playlist?');">
+                    {% csrf_token %}
+                    <button type="submit" class="sf-btn sf-btn-secondary" style="color:var(--sf-danger); border-color:var(--sf-danger);">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </form>
+            {% endif %}
+
+            <a href="{% url 'musica:ticket_desde_musica' 'playlist' playlist.pk %}" class="sf-btn sf-btn-support">
+                <i class="fas fa-headset"></i> Contactar soporte
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- LISTA DE CANCIONES -->
+<table class="sf-track-table" style="margin-bottom: 32px;">
+    <thead>
+        <tr>
+            <th class="sf-track-num">#</th>
+            <th>Título</th>
+            <th>Artista</th>
+            <th>Álbum</th>
+            <th class="sf-track-duration">Duración</th>
+            {% if es_duenio %}<th class="sf-track-actions">Quitar</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in elementos %}
+            <tr class="sf-track-row">
+                <td class="sf-track-cell sf-track-num">
+                    <button class="sf-ctrl-btn sf-btn-play-trigger"
+                            data-title="{{ item.cancion.titulo }}"
+                            data-artist="{{ item.cancion.artista.nombre }}"
+                            data-cover="{{ item.cancion.portada_o_default }}"
+                            data-duration="{{ item.cancion.duracion_seg }}">
+                        {{ forloop.counter }}
+                    </button>
+                </td>
+                <td class="sf-track-cell">
+                    <a href="{% url 'musica:cancion_detail' item.cancion.pk %}" class="sf-track-title">{{ item.cancion.titulo }}</a>
+                </td>
+                <td class="sf-track-cell">
+                    <a href="{% url 'musica:artista_detail' item.cancion.artista.pk %}" style="color:var(--sf-text-muted);">{{ item.cancion.artista.nombre }}</a>
+                </td>
+                <td class="sf-track-cell" style="color:var(--sf-text-muted);">
+                    {{ item.cancion.album.titulo|default:"Sencillo" }}
+                </td>
+                <td class="sf-track-cell sf-track-duration">{{ item.cancion.duracion_formateada }}</td>
+                {% if es_duenio %}
+                    <td class="sf-track-cell sf-track-actions">
+                        <form method="post" action="{% url 'musica:playlist_remove_cancion' playlist.pk item.cancion.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="sf-ctrl-btn" title="Quitar de la playlist" style="color:var(--sf-danger);">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </td>
+                {% endif %}
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" style="color:var(--sf-text-muted); padding:24px; text-align:center;">Esta playlist está vacía. Busca canciones en el catálogo y agrégalas.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

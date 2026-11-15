@@ -16,29 +16,29 @@
 }
 
 .metrica-card {
-    background: white;
+    background: #181818;
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     text-align: center;
-    border-left: 4px solid #4E31E1;
+    border-left: 4px solid #1DB954;
 }
 
 .metrica-card h3 {
     margin: 0 0 10px 0;
-    color: #333;
+    color: #ffffff;
     font-size: 1em;
 }
 
 .metrica-card .numero {
     font-size: 2.5em;
     font-weight: bold;
-    color: #4E31E1;
+    color: #1DB954;
     margin: 0;
 }
 
 .categorias-section, .usuarios-section {
-    background: white;
+    background: #181818;
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -57,9 +57,9 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    background: #f8f9fa;
+    background: #202020;
     border-radius: 8px;
-    border-left: 4px solid #673de6;
+    border-left: 4px solid #1DB954;
 }
 
 .usuarios-list {
@@ -71,7 +71,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #282828;
 }
 
 .usuario-card:last-child {
@@ -79,8 +79,8 @@
 }
 
 .preguntas-count {
-    background: #4E31E1;
-    color: white;
+    background: #1DB954;
+    color: #000000;
     padding: 4px 8px;
     border-radius: 12px;
     font-size: 0.8em;

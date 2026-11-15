@@ -429,10 +429,12 @@ class WhiteLabelAndSeedTests(TestCase):
         admin_user = Usuario.objects.get(usuario='admin', correo='admin@gmail.com', admin=True, tecnico=True)
         tech_user = Usuario.objects.get(usuario='tecnico', correo='tecnico@gmail.com', tecnico=True, admin=False)
         normal_user = Usuario.objects.get(usuario='usuario', correo='usuario@gmail.com', admin=False, tecnico=False)
+        cliente_user = Usuario.objects.get(usuario='cliente', correo='cliente@gmail.com', admin=False, tecnico=False)
 
         self.assertTrue(admin_user.check_password('admin123'))
         self.assertTrue(tech_user.check_password('tecnico123'))
-        self.assertTrue(normal_user.check_password('usuario123'))
+        self.assertTrue(normal_user.check_password('cliente123'))
+        self.assertTrue(cliente_user.check_password('cliente123'))
         self.assertEqual(Preguntas.objects.count(), 6)
 
     def test_privacy_policy_view_and_footer_button(self):
@@ -443,6 +445,8 @@ class WhiteLabelAndSeedTests(TestCase):
         index_response = self.client.get(reverse('index'))
         self.assertEqual(index_response.status_code, 200)
         self.assertContains(index_response, reverse('politica_privacidad'))
+        self.assertContains(index_response, 'footer-toggle')
+        self.assertContains(index_response, 'soundflow-footer-minimized')
         self.assertContains(index_response, 'Políticas de Privacidad')
 
         privacy_response = self.client.get(reverse('politica_privacidad'))

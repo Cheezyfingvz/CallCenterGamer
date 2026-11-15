@@ -7,20 +7,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --brand-primary: {{ brand.PRIMARY_COLOR|default:"#4E31E1" }};
-            --brand-secondary: {{ brand.SECONDARY_COLOR|default:"#673de6" }};
-            --brand-accent: {{ brand.ACCENT_COLOR|default:"#25c2b5" }};
+            --brand-primary: {{ brand.PRIMARY_COLOR|default:"#1DB954" }};
+            --brand-secondary: {{ brand.SECONDARY_COLOR|default:"#181818" }};
+            --brand-accent: {{ brand.ACCENT_COLOR|default:"#1ed760" }};
         }
     </style>
     <link rel="stylesheet" href="{% static 'estiloHeader.css' %}?v=20261026-privacidad">
-    <title>{% block title %}{{ brand.NAME|default:"Call Center Gamer" }}{% endblock %}</title>
+    <title>{% block title %}{{ brand.NAME|default:"Call Center SoundFlow" }}{% endblock %}</title>
     {% block links %}{% endblock %}
 </head>
 <body>
     <nav class="MainNav">
         <div id="NavbarIzq">
             <a href="{% if user.is_authenticated %}{% if user.admin or user.tecnico %}{% url 'administracion' %}{% else %}{% url 'inicio' user.id %}{% endif %}{% else %}{% url 'index' %}{% endif %}" id="logo">
-                <i class="{{ brand.ICON_CLASS|default:'fas fa-gamepad' }}"></i> {{ brand.NAME|default:"CallCenterGamer" }}
+                <i class="{{ brand.ICON_CLASS|default:'fas fa-wave-square' }}"></i> {{ brand.NAME|default:"Call Center SoundFlow" }}
             </a>
             <ul>
                 {% if user.is_authenticated %}
@@ -34,6 +34,7 @@
                 {% else %}
                     <li><a href="{% url 'index' %}">Inicio</a></li>
                 {% endif %}
+                <li><a href="{% url 'musica:inicio' %}" style="color: #1DB954; font-weight: 600;"><i class="fas fa-wave-square"></i> SoundFlow</a></li>
             </ul>
         </div>
 
@@ -72,7 +73,12 @@
     </main>
 
     <footer class="site-footer">
-        <div class="footer-content">
+        <button type="button" class="footer-toggle" aria-expanded="true" aria-controls="footer-content"
+                title="Minimizar pie de página">
+            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+            <span class="sr-only">Minimizar pie de página</span>
+        </button>
+        <div class="footer-content" id="footer-content">
             <section class="footer-section">
                 <h2>Contacto</h2>
                 <p>Instagram</p>
@@ -83,7 +89,7 @@
                 <p>{{ brand.FOOTER_ADDRESS|default:"Av. Américo Vespucio 974, Maipú, Región Metropolitana" }}</p>
             </section>
             <div class="footer-copyright">
-                <p>© 2026-2030 {{ brand.NAME|default:"Call Center Gamer" }}. Todos los derechos reservados.</p>
+                <p>© 2026-2030 {{ brand.NAME|default:"Call Center SoundFlow" }}. Todos los derechos reservados.</p>
                 <a href="{% url 'politica_privacidad' %}" class="btn-footer-privacidad">
                     <i class="fas fa-user-shield"></i> Políticas de Privacidad
                 </a>
@@ -105,5 +111,46 @@
         #NavbarDer ul { display: flex; align-items: center; gap: 10px; }
         #NavbarDer ul li { display: flex; align-items: center; }
     </style>
+    <script>
+        (function () {
+            const footer = document.querySelector('.site-footer');
+            const toggle = document.querySelector('.footer-toggle');
+            const storageKey = 'soundflow-footer-minimized';
+
+            if (!footer || !toggle) {
+                return;
+            }
+
+            const setMinimized = (minimized) => {
+                footer.classList.toggle('is-collapsed', minimized);
+                toggle.setAttribute('aria-expanded', String(!minimized));
+                toggle.title = minimized ? 'Mostrar pie de página' : 'Minimizar pie de página';
+                toggle.querySelector('i').className = minimized
+                    ? 'fas fa-chevron-up'
+                    : 'fas fa-chevron-down';
+                toggle.querySelector('.sr-only').textContent = minimized
+                    ? 'Mostrar pie de página'
+                    : 'Minimizar pie de página';
+            };
+
+            let minimized = false;
+            try {
+                minimized = window.localStorage.getItem(storageKey) === 'true';
+            } catch (error) {
+                minimized = false;
+            }
+            setMinimized(minimized);
+
+            toggle.addEventListener('click', () => {
+                const nextState = !footer.classList.contains('is-collapsed');
+                setMinimized(nextState);
+                try {
+                    window.localStorage.setItem(storageKey, String(nextState));
+                } catch (error) {
+                    // El control sigue funcionando aunque el navegador bloquee el almacenamiento.
+                }
+            });
+        }());
+    </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {% extends "componentes/header.html" %}
 {% load static %}
 
-{% block title %}Mi Panel - {{ brand.NAME|default:"CallCenterGamer" }}{% endblock %}
+{% block title %}Mi Panel - {{ brand.NAME|default:"Call Center SoundFlow" }}{% endblock %}
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'inicio.css' %}">
@@ -28,7 +28,7 @@
                     <input type="text" name="buscar_ayuda" placeholder="¿En qué puedo ayudarte? Ej: problema con internet, juego lento..."
                            value="{{ request.GET.buscar_ayuda|default:'' }}"
                            style="flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px;">
-                    <button type="submit" style="padding: 12px 20px; background: #4E31E1; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                    <button type="submit" style="padding: 12px 20px; background: #1DB954; color: #000; border: none; border-radius: 8px; cursor: pointer;">
                         <i class="fas fa-search"></i> Buscar
                     </button>
                 </div>
@@ -39,13 +39,13 @@
         </div>
 
         {% if sugerencias_ia %}
-        <div class="resultados-ia" style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #4E31E1;">
+        <div class="resultados-ia" style="margin-top: 20px; padding: 20px; background: #181818; border-radius: 10px; border-left: 4px solid #1DB954;">
             <h4 style="color: #333; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
                 <i class="fas fa-lightbulb"></i> Sugerencias para: "{{ sugerencias_ia.consulta_original }}"
             </h4>
             <div class="respuesta-ia" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                    <i class="fas fa-robot" style="color: #4E31E1;"></i>
+                    <i class="fas fa-robot" style="color: #1DB954;"></i>
                     <strong style="color: #333;">Respuesta Automática:</strong>
                 </div>
                 <div style="white-space: pre-line; line-height: 1.5; color: #555;">
@@ -59,10 +59,10 @@
                     <strong style="color: #333;">Preguntas Similares Resueltas:</strong>
                 </div>
                 {% for rec in sugerencias_ia.recomendaciones %}
-                <div style="margin: 12px 0; padding: 12px; border-left: 3px solid #4E31E1; background: #f8f9fa; border-radius: 0 8px 8px 0;">
+                <div style="margin: 12px 0; padding: 12px; border-left: 3px solid #1DB954; background: #202020; border-radius: 0 8px 8px 0;">
                     <div style="display: flex; justify-content: space-between; align-items: start; gap: 10px; margin-bottom: 8px;">
                         <strong style="color: #333; flex: 1;">{{ rec.pregunta_similar }}</strong>
-                        <span style="background: #4E31E1; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Similitud: {{ rec.similitud }}</span>
+                        <span style="background: #1DB954; color: #000; padding: 2px 8px; border-radius: 12px; font-size: 0.8em;">Similitud: {{ rec.similitud }}</span>
                     </div>
                     <p style="color: #666; margin: 0; font-size: 0.9em; line-height: 1.4;">{{ rec.respuesta }}</p>
                     {% if rec.categoria %}
@@ -79,7 +79,7 @@
             {% endif %}
             <div style="text-align: center; margin-top: 20px;">
                 <a href="?buscar_ayuda={{ sugerencias_ia.consulta_original|urlencode }}#formulario-pregunta"
-                   style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #4E31E1; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em;">
+                   style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #1DB954; color: #000; text-decoration: none; border-radius: 6px; font-size: 0.9em;">
                     <i class="fas fa-question-circle"></i> Crear pregunta sobre este tema
                 </a>
             </div>

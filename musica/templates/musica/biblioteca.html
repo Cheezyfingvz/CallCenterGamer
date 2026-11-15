@@ -1,0 +1,114 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}Tu Biblioteca — SoundFlow{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 28px;">
+    <h1 style="font-size: 30px; font-weight: 800; margin-bottom: 8px;">Tu Biblioteca</h1>
+    <p style="color: var(--sf-text-muted); font-size: 14px;">Todo lo que has guardado, marcado como favorito y descargado.</p>
+</div>
+
+<!-- CANCIONES FAVORITAS -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title"><i class="fas fa-heart" style="color:var(--sf-accent); margin-right:8px;"></i> Canciones que te gustan ({{ canciones_fav.count }})</h2>
+</div>
+{% if canciones_fav %}
+    <table class="sf-track-table" style="margin-bottom: 32px;">
+        <tbody>
+            {% for c in canciones_fav %}
+                <tr class="sf-track-row">
+                    <td class="sf-track-cell sf-track-num">
+                        <button class="sf-ctrl-btn sf-btn-play-trigger"
+                                data-title="{{ c.titulo }}"
+                                data-artist="{{ c.artista.nombre }}"
+                                data-cover="{{ c.portada_o_default }}"
+                                data-duration="{{ c.duracion_seg }}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </td>
+                    <td class="sf-track-cell">
+                        <div class="sf-track-info">
+                            <a href="{% url 'musica:cancion_detail' c.pk %}" class="sf-track-title">{{ c.titulo }}</a>
+                            <a href="{% url 'musica:artista_detail' c.artista.pk %}" class="sf-track-artist">{{ c.artista.nombre }}</a>
+                        </div>
+                    </td>
+                    <td class="sf-track-cell">{{ c.album.titulo|default:"Sencillo" }}</td>
+                    <td class="sf-track-cell sf-track-duration">{{ c.duracion_formateada }}</td>
+                    <td class="sf-track-cell sf-track-actions">
+                        <form method="post" action="{% url 'musica:toggle_favorito' 'cancion' c.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="sf-ctrl-btn" title="Quitar de favoritos" style="color:var(--sf-accent);">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p style="color:var(--sf-text-muted); margin-bottom: 32px;">Aún no tienes canciones favoritas marcadas.</p>
+{% endif %}
+
+<!-- ÁLBUMES GUARDADOS -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Álbumes guardados ({{ albums_fav.count }})</h2>
+</div>
+<div class="sf-grid" style="margin-bottom: 32px;">
+    {% for alb in albums_fav %}
+        <div class="sf-card">
+            <div class="sf-card-img-wrapper">
+                <img src="{{ alb.portada_o_default }}" alt="{{ alb.titulo }}" class="sf-card-img">
+            </div>
+            <a href="{% url 'musica:album_detail' alb.pk %}" class="sf-card-title">{{ alb.titulo }}</a>
+            <span class="sf-card-subtitle">{{ alb.artista.nombre }}</span>
+        </div>
+    {% empty %}
+        <p style="color:var(--sf-text-muted); grid-column:1/-1;">No tienes álbumes guardados en tu biblioteca.</p>
+    {% endfor %}
+</div>
+
+<!-- ARTISTAS QUE SIGUES -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title">Artistas que sigues ({{ artistas_fav.count }})</h2>
+</div>
+<div class="sf-grid" style="margin-bottom: 32px;">
+    {% for art in artistas_fav %}
+        <div class="sf-card" style="text-align: center;">
+            <div class="sf-card-img-wrapper" style="border-radius: 50%;">
+                <img src="{{ art.imagen_url|default:'/static/musica/img/cover_placeholder.svg' }}" alt="{{ art.nombre }}" class="sf-card-img" style="border-radius: 50%;">
+            </div>
+            <a href="{% url 'musica:artista_detail' art.pk %}" class="sf-card-title">{{ art.nombre }}</a>
+        </div>
+    {% empty %}
+        <p style="color:var(--sf-text-muted); grid-column:1/-1;">No sigues a ningún artista todavía.</p>
+    {% endfor %}
+</div>
+
+<!-- DESCARGAS SIMULADAS (OFFLINE) -->
+<div class="sf-section-header">
+    <h2 class="sf-section-title"><i class="fas fa-arrow-circle-down" style="color:var(--sf-info); margin-right:8px;"></i> Descargas Simuladas para Modo Offline</h2>
+</div>
+{% if descargas %}
+    <div style="background-color: var(--sf-card-bg); padding: 18px; border-radius: var(--sf-radius-md); border: 1px solid var(--sf-border); max-width: 650px;">
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
+            {% for d in descargas %}
+                <li style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 8px;">
+                    <div>
+                        <strong style="color:var(--sf-text);">{{ d.cancion.titulo }}</strong>
+                        <div style="font-size: 12px; color: var(--sf-text-muted);">{{ d.cancion.artista.nombre }} &bull; {{ d.fecha|date:"d M Y H:i" }}</div>
+                    </div>
+                    <span style="font-size: 11px; color: var(--sf-accent); background: rgba(29, 185, 84, 0.15); padding: 2px 8px; border-radius: 4px;">
+                        <i class="fas fa-check"></i> {{ d.estado|capfirst }}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+        <p style="font-size: 11px; color: #777; margin-top: 14px;">* Las descargas son registros simulados de SQLite con fines académicos (sin archivos mp3 reales).</p>
+    </div>
+{% else %}
+    <p style="color:var(--sf-text-muted);">No has registrado descargas simuladas aún.</p>
+{% endif %}
+
+{% endblock %}

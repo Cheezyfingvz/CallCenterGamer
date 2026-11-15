@@ -1,0 +1,50 @@
+{% extends 'musica/base_musica.html' %}
+{% load static %}
+
+{% block title %}Tus Tickets de Música — SoundFlow{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 28px;">
+    <h1 style="font-size: 30px; font-weight: 800; margin-bottom: 8px;">Tus Consultas y Tickets de Soporte</h1>
+    <p style="color: var(--sf-text-muted); font-size: 14px;">Seguimiento en tiempo real de los tickets creados desde SoundFlow.</p>
+</div>
+
+{% if tickets %}
+    <div style="display: flex; flex-direction: column; gap: 16px; max-width: 800px;">
+        {% for t in tickets %}
+            <div style="background-color: var(--sf-card-bg); border-radius: var(--sf-radius-md); padding: 20px; border: 1px solid var(--sf-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    {% if t.contenido_musical.portada_o_default %}
+                        <img src="{{ t.contenido_musical.portada_o_default }}" alt="" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;">
+                    {% endif %}
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--sf-accent); font-weight: 700; margin-bottom: 4px;">
+                            Ticket #{{ t.idPregunta }} &bull; {{ t.categoria|capfirst }}
+                        </div>
+                        <h3 style="font-size: 16px; font-weight: 700; color: var(--sf-text); margin-bottom: 4px;">{{ t.Titulo }}</h3>
+                        <p style="font-size: 13px; color: var(--sf-text-muted);">
+                            Referencia: <strong style="color:#fff;">{{ t.contenido_musical.nombre }}</strong> &bull;
+                            Estado: <span style="color:var(--sf-accent);">{{ t.get_estado_display }}</span> &bull;
+                            Prioridad: <span>{{ t.get_prioridad_display }}</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <a href="{% url 'respuestas' t.idPregunta %}" class="sf-btn sf-btn-primary sf-btn-sm">
+                        <i class="fas fa-comments"></i> Ver conversación
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="background-color: var(--sf-card-bg); padding: 40px; border-radius: var(--sf-radius-md); text-align: center; max-width: 600px;">
+        <i class="fas fa-headset" style="font-size: 36px; color: var(--sf-text-muted); margin-bottom: 14px;"></i>
+        <h3>No tienes tickets de música abiertos</h3>
+        <p style="color: var(--sf-text-muted); margin: 8px 0 20px 0;">Si encuentras algún error en una canción, álbum o necesitas ayuda con tu suscripción, usa el botón "Contactar soporte" en cualquier ficha.</p>
+        <a href="{% url 'musica:catalogo' %}" class="sf-btn sf-btn-secondary sf-btn-sm">Explorar catálogo</a>
+    </div>
+{% endif %}
+
+{% endblock %}

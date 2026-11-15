@@ -6,7 +6,7 @@
 
 #Titulo {
     font-family: 'Heebo', sans-serif;
-    color: rgb(52, 32, 150);
+    color: #ffffff;
     text-align: center;
 }
 
@@ -15,12 +15,12 @@
     border: none;
     background-color: transparent;
     cursor: pointer;
-    color: #4E31E1;
+    color: #1DB954;
 }
 
 table {
     border-collapse: collapse;
-    background: white;
+    background: #181818;
     border-radius: 6px;
     overflow: hidden;
     max-width: 1200px;
@@ -28,7 +28,7 @@ table {
     margin: 0 auto;
     position: relative;
     font-family: 'Heebo', sans-serif;
-    box-shadow: 0px 0px 5px 2px rgba(78, 49, 225, 0.7);
+    box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.6);
 }
 
 table * {
@@ -42,14 +42,14 @@ table th {
 
 table thead tr {
     height: 60px;
-    background: #4E31E1;
+    background: #202020;
     font-size: 16px;
-    color: white;
+    color: #1DB954;
 }
 
 table tbody tr {
     height: 48px;
-    border-bottom: 1px solid rgb(52, 32, 150);
+    border-bottom: 1px solid #282828;
 }
 
 table tbody tr:last-child {
@@ -82,5 +82,5 @@ blockquote {
 
 #ModifTable th a{
     text-decoration: none;
-    color: #4E31E1;
+    color: #1DB954;
 }

@@ -1,7 +1,7 @@
 {% extends "componentes/header.html" %}
 {% load static %}
 
-{% block title %}Conversación #{{ Pregunta.idPregunta }} - {{ brand.NAME|default:"CallCenterGamer" }}{% endblock %}
+{% block title %}Conversación #{{ Pregunta.idPregunta }} - {{ brand.NAME|default:"Call Center SoundFlow" }}{% endblock %}
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'respuestas.css' %}">
@@ -43,15 +43,39 @@
         <h2>Prioridad: <a>{{ Pregunta.get_prioridad_display }}</a></h2>
         <h2>Categoría: <a>{{ Pregunta.categoria|default:"otros"|title }}</a></h2>
         <h2>Pregunta: <a>{{ Pregunta.Pregunta }}</a></h2>
+
+        {% if Pregunta.contenido_musical %}
+        <div style="margin-top: 15px; padding: 12px; background: #1a1a24; border-radius: 8px; border: 1px solid #1DB954; color: #fff;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <img src="{{ Pregunta.contenido_musical.portada_o_default }}" alt="" style="width: 54px; height: 54px; border-radius: 6px; object-fit: cover;">
+                <div>
+                    <span style="background: #1DB954; color: #000; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; text-transform: uppercase;">
+                        SoundFlow: {{ Pregunta.contenido_musical.get_tipo_display }}
+                    </span>
+                    <h3 style="font-size: 14px; margin: 4px 0; color: #fff;">{{ Pregunta.contenido_musical.nombre }}</h3>
+                    {% if Pregunta.contenido_musical.mbid %}
+                        <div style="font-size: 11px; color: #64b5f6;">MBID: {{ Pregunta.contenido_musical.mbid|slice:":12" }}...</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if Pregunta.contenido_musical.url_interna %}
+                <div style="margin-top: 10px; text-align: right;">
+                    <a href="{{ Pregunta.contenido_musical.url_interna }}" target="_blank" style="background: #1DB954; color: #000; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-external-link-alt"></i> Abrir en SoundFlow
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     {% if sugerencia_ia %}
-    <div class="divPregunta" style="margin-top: 20px; padding: 15px; background: #f8f9fa;">
+    <div class="divPregunta" style="margin-top: 20px; padding: 15px; background: #181818;">
         <h2 style="margin-left: 0; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-robot"></i> Asistencia IA para Soporte
         </h2>
         <p id="textoSugerenciaIA" style="font-size: 13px; color: #333; line-height: 1.4; margin-bottom: 10px;">{{ sugerencia_ia }}</p>
-        <button type="button" onclick="usarSugerenciaIA()" style="background: var(--brand-primary, #4E31E1); color: white; border: none; padding: 7px 14px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 600;">
+        <button type="button" onclick="usarSugerenciaIA()" style="background: var(--brand-primary, #1DB954); color: #000; border: none; padding: 7px 14px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 600;">
             <i class="fas fa-magic"></i> Copiar al cuadro de respuesta
         </button>
     </div>
@@ -63,7 +87,7 @@
         <div id="btnFondo">
             <button id="Rojo" type="button" onclick="cambiarColor('red')"></button>
             <button id="Gris" type="button" onclick="cambiarColor('#323232')"></button>
-            <button id="Rosita" type="button" onclick="cambiarColor('#C4BAF5')"></button>
+            <button id="Rosita" type="button" onclick="cambiarColor('#282828')"></button>
         </div>
     </div>
 </div>
