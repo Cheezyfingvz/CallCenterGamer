@@ -10,6 +10,7 @@
 #   3. Crea o actualiza las tablas de la base de datos SQLite3 (db.sqlite3).
 #   4. Ejecuta el comando idempotente seed_initial_data para asegurar que
 #      existan los usuarios de prueba (Admin, Técnico, Cliente) y tickets base.
+#   5. Ejecuta el comando idempotente seed_musica para cargar el catálogo demo.
 # ==============================================================================
 
 # Detiene inmediatamente la ejecución si cualquier comando devuelve un error
@@ -26,5 +27,8 @@ python manage.py migrate --noinput
 
 echo "==> 4. Precargando usuarios y tickets iniciales (idempotente)..."
 python manage.py seed_initial_data
+
+echo "==> 5. Precargando catálogo demo de SoundFlow (idempotente)..."
+python manage.py seed_musica
 
 echo "==> Build finalizado exitosamente."

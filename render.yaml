@@ -5,7 +5,8 @@ services:
     plan: free
     region: oregon
     buildCommand: bash build.sh
-    startCommand: gunicorn CallCenterGamer.wsgi:application
+    startCommand: gunicorn --bind 0.0.0.0:$PORT CallCenterGamer.wsgi:application
+    healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.8

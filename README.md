@@ -211,3 +211,22 @@ Verificaciones ejecutadas:
 - **Sin videos musicales**: La plataforma se limita al catálogo y fichas de audio/álbum.
 - **Sin pasarelas de pago reales**: Las suscripciones y renovaciones son demostraciones de base de datos SQLite.
 - **Caché en memoria**: Por defecto utiliza `LocMemCache`. Para entornos distribuidos en clúster se sugiere Redis.
+
+## 🚀 Despliegue en Render
+
+Este proyecto debe desplegarse como **Web Service**, no como Static Site, porque
+Django procesa autenticación, sesiones, formularios, tickets y el panel
+administrativo en el servidor.
+
+El archivo `render.yaml` ya configura el servicio Python. Para una demo:
+
+1. En Render selecciona **New > Blueprint Instance**.
+2. Conecta el repositorio y selecciona la rama `feat/soundflow-rebranding`.
+3. Render ejecutará `bash build.sh`, que instala dependencias, recolecta
+   estáticos, aplica migraciones y carga los seeds del Call Center y SoundFlow.
+4. Define una clave segura en `DJANGO_SECRET_KEY` si no usas el valor generado
+   automáticamente por el Blueprint.
+
+La demo usa SQLite. Render tiene un filesystem efímero por defecto, por lo que
+usuarios, tickets y cambios pueden perderse después de reinicios o nuevos
+deploys. Para uso persistente se debe migrar la configuración a PostgreSQL.
